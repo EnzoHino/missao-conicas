@@ -1,0 +1,12 @@
+{
+  "name": "missao-conicas",
+  "version": "1.0.0",
+  "description": "Missão Cônicas — Escape Room Espacial sobre Seções Cônicas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

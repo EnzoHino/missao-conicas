@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Missão Cônicas — Escape Room Espacial</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #111827;
+      --bg3: #1e2a3a;
+      --border: rgba(100,160,255,0.15);
+      --border2: rgba(100,160,255,0.3);
+      --text: #e8f0fe;
+      --text2: #8ba3c7;
+      --text3: #4a6080;
+      --blue: #3b82f6;
+      --blue2: #1d4ed8;
+      --teal: #14b8a6;
+      --teal2: #0d9488;
+      --red: #ef4444;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --radius: 10px;
+      --radius2: 14px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .stars-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(20,184,166,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    #app {
+      position: relative; z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+      min-height: 100vh;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── HUD ── */
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--bg2); border: 0.5px solid var(--border2);
+      border-radius: var(--radius2); padding: 10px 18px;
+      margin-bottom: 1rem; font-size: 14px;
+    }
+    .hud-item { display: flex; align-items: center; gap: 6px; }
+    .hud-label { color: var(--text2); }
+    .hud-val { font-weight: 600; color: var(--text); }
+    .lives { font-size: 18px; letter-spacing: 3px; }
+
+    .room-dots { display: flex; gap: 8px; align-items: center; }
+    .room-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--bg3); border: 1px solid var(--border2);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .room-dot.done { background: var(--teal); border-color: var(--teal); }
+    .room-dot.active { background: var(--blue); border-color: var(--blue); }
+
+    /* ── PROGRESS ── */
+    .progress-bar {
+      height: 3px; background: var(--bg3); border-radius: 2px;
+      margin-bottom: 1.5rem; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--blue), var(--teal));
+      border-radius: 2px; transition: width 0.4s ease;
+    }
+
+    /* ── ROOM HEADER ── */
+    .room-header { text-align: center; margin-bottom: 1.5rem; }
+    .room-tag {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 12px; border-radius: 20px;
+      background: rgba(59,130,246,0.15); color: #93c5fd;
+      border: 0.5px solid rgba(59,130,246,0.3);
+      margin-bottom: 10px;
+    }
+    .room-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .room-desc { font-size: 14px; color: var(--text2); max-width: 500px; margin: 0 auto; }
+
+    /* ── QUESTION CARD ── */
+    .question-card {
+      background: var(--bg2); border: 0.5px solid var(--border2);
+      border-radius: var(--radius2); padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .q-num { font-size: 11px; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .q-text { font-size: 16px; font-weight: 500; line-height: 1.6; margin-bottom: 1rem; }
+    .q-formula {
+      font-family: 'Courier New', monospace; font-size: 15px;
+      background: var(--bg3); border: 0.5px solid var(--border2);
+      border-radius: var(--radius); padding: 10px 16px;
+      margin-bottom: 1.25rem; display: inline-block; color: #93c5fd;
+    }
+
+    /* ── OPTIONS ── */
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .options { grid-template-columns: 1fr; } }
+
+    .opt-btn {
+      background: var(--bg3); border: 0.5px solid var(--border);
+      border-radius: var(--radius); padding: 12px 16px;
+      font-size: 14px; font-family: inherit; cursor: pointer;
+      text-align: left; color: var(--text);
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .opt-btn:hover:not(:disabled) {
+      background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4);
+      transform: translateY(-1px);
+    }
+    .opt-btn:active:not(:disabled) { transform: scale(0.98); }
+    .opt-btn.correct { background: rgba(34,197,94,0.15); border-color: var(--green); color: #86efac; }
+    .opt-btn.wrong { background: rgba(239,68,68,0.15); border-color: var(--red); color: #fca5a5; }
+    .opt-btn:disabled { cursor: default; }
+
+    /* ── FEEDBACK ── */
+    .feedback {
+      border-radius: var(--radius); padding: 12px 16px;
+      font-size: 14px; margin-top: 12px; line-height: 1.5;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.ok { background: rgba(34,197,94,0.1); border: 0.5px solid rgba(34,197,94,0.3); color: #86efac; }
+    .feedback.err { background: rgba(239,68,68,0.1); border: 0.5px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+    .nav-row { display: flex; justify-content: flex-end; margin-top: 0.75rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      background: var(--bg2); border: 0.5px solid var(--border2);
+      border-radius: var(--radius); padding: 11px 28px;
+      font-size: 15px; font-weight: 500; font-family: inherit;
+      cursor: pointer; color: var(--text);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:hover { background: var(--bg3); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--blue2); border-color: var(--blue);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--blue); }
+
+    /* ── INTRO ── */
+    .intro-wrap { text-align: center; padding: 2rem 0; }
+    .intro-icon { font-size: 64px; margin-bottom: 1rem; line-height: 1; }
+    .intro-title { font-size: 28px; font-weight: 700; margin-bottom: 0.5rem; }
+    .intro-sub {
+      font-size: 15px; color: var(--text2); max-width: 480px;
+      margin: 0 auto 2rem; line-height: 1.7;
+    }
+    .rooms-preview {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 2rem;
+    }
+    .room-chip {
+      background: var(--bg2); border: 0.5px solid var(--border2);
+      border-radius: var(--radius); padding: 14px 10px; text-align: center;
+    }
+    .room-chip .icon { font-size: 24px; margin-bottom: 6px; }
+    .room-chip strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .room-chip span { font-size: 12px; color: var(--text2); }
+
+    .info-row {
+      display: flex; gap: 16px; justify-content: center;
+      margin-bottom: 2rem; flex-wrap: wrap;
+    }
+    .info-pill {
+      background: var(--bg3); border: 0.5px solid var(--border);
+      border-radius: 20px; padding: 5px 14px; font-size: 13px; color: var(--text2);
+    }
+    .info-pill b { color: var(--text); }
+
+    /* ── END ── */
+    .end-wrap { text-align: center; padding: 2rem 0; }
+    .end-stars { font-size: 48px; margin-bottom: 0.75rem; }
+    .end-title { font-size: 26px; font-weight: 700; margin-bottom: 0.5rem; }
+    .end-sub { font-size: 15px; color: var(--text2); margin-bottom: 2rem; }
+    .score-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 2rem;
+    }
+    .score-box {
+      background: var(--bg2); border: 0.5px solid var(--border2);
+      border-radius: var(--radius); padding: 14px;
+    }
+    .score-box .s-val { font-size: 26px; font-weight: 700; color: var(--teal); }
+    .score-box .s-lbl { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    /* ── GAME OVER ── */
+    .gameover-wrap { text-align: center; padding: 2rem 0; }
+
+    /* ── TRANSITION ── */
+    .screen.active { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ── FOOTER ── */
+    .game-footer {
+      text-align: center; margin-top: 3rem;
+      font-size: 12px; color: var(--text3);
+    }
+  </style>
+</head>
+<body>
+<div class="stars-bg"></div>
+<div id="app">
+
+  <!-- INTRO -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-wrap">
+      <div class="intro-icon">🚀</div>
+      <div class="intro-title">Missão Cônicas</div>
+      <p class="intro-sub">Você é um engenheiro espacial preso em uma estação orbitante avariada. Para escapar, resolva os desafios matemáticos sobre cônicas em cada sala da nave.</p>
+      <div class="rooms-preview">
+        <div class="room-chip">
+          <div class="icon">🔥</div>
+          <strong>Sala 1</strong>
+          <span>Parábola</span>
+        </div>
+        <div class="room-chip">
+          <div class="icon">🪐</div>
+          <strong>Sala 2</strong>
+          <span>Elipse</span>
+        </div>
+        <div class="room-chip">
+          <div class="icon">📡</div>
+          <strong>Sala 3</strong>
+          <span>Hipérbole</span>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-pill"><b>9</b> questões</div>
+        <div class="info-pill"><b>3</b> vidas</div>
+        <div class="info-pill">Feedback em cada resposta</div>
+        <div class="info-pill">Classificação por estrelas</div>
+      </div>
+      <button class="btn btn-primary" onclick="startGame()">Iniciar missão →</button>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">Pontos</span>
+        <span class="hud-val" id="hud-score">0</span>
+      </div>
+      <div class="room-dots" id="room-dots"></div>
+      <div class="hud-item">
+        <span class="lives" id="hud-lives">♥♥♥</span>
+      </div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div class="room-header">
+      <div class="room-tag" id="room-tag"></div>
+      <div class="room-title" id="room-title"></div>
+      <div class="room-desc" id="room-desc"></div>
+    </div>
+    <div class="question-card">
+      <div class="q-num" id="q-num"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-formula" id="q-formula" style="display:none"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-primary" id="btn-next" style="display:none" onclick="nextQuestion()">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="screen-gameover" class="screen">
+    <div class="gameover-wrap">
+      <div style="font-size:64px;margin-bottom:1rem">💀</div>
+      <div class="end-title">Missão falhou</div>
+      <p class="end-sub">Você ficou sem vidas. Estude as cônicas e tente novamente!</p>
+      <p style="font-size:15px;color:var(--text2);margin-bottom:1.5rem">Pontuação: <strong id="go-score" style="color:var(--text)">0</strong></p>
+      <button class="btn btn-primary" onclick="resetGame()">Tentar novamente</button>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div id="screen-end" class="screen">
+    <div class="end-wrap">
+      <div class="end-stars" id="end-stars">⭐⭐⭐</div>
+      <div class="end-title" id="end-title"></div>
+      <p class="end-sub" id="end-sub"></p>
+      <div class="score-grid">
+        <div class="score-box"><div class="s-val" id="es-pts">0</div><div class="s-lbl">Pontos</div></div>
+        <div class="score-box"><div class="s-val" id="es-acc">0%</div><div class="s-lbl">Precisão</div></div>
+        <div class="score-box"><div class="s-val" id="es-lives">0</div><div class="s-lbl">Vidas restantes</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="resetGame()">Jogar novamente</button>
+    </div>
+  </div>
+
+  <div class="game-footer">Missão Cônicas — Trabalho de Seções Cônicas 2026</div>
+</div>
+
+<script>
+const ROOMS = [
+  {
+    tag: "Sala 1 — Módulo de Propulsão",
+    title: "Parábola",
+    desc: "Os motores usam câmaras parabólicas para focar energia. Resolva os desafios para religar o sistema!",
+    questions: [
+      {
+        text: "O espelho de um telescópio tem forma parabólica com a equação abaixo. Qual é o vértice desta parábola?",
+        formula: "y = 2x² - 8x + 6",
+        options: ["(2, -2)", "(4, 6)", "(-2, 0)", "(0, 6)"],
+        correct: 0,
+        explain: "✓ Completando o quadrado: y = 2(x−2)² − 2. O vértice é (2, −2)."
+      },
+      {
+        text: "Uma trajetória balística segue uma curva parabólica. Qual das equações abaixo representa uma parábola com eixo horizontal (abertura para a direita)?",
+        formula: null,
+        options: ["y² = 8x", "x² = -4y", "y = x² + 3", "x² + y² = 9"],
+        correct: 0,
+        explain: "✓ A forma y² = 4px representa parábola horizontal. Com p = 2 > 0, abre para a direita."
+      },
+      {
+        text: "A antena parabólica da nave tem foco no ponto F(0, 3) e diretriz y = −3. Qual é a equação desta parábola?",
+        formula: null,
+        options: ["x² = 12y", "x² = 6y", "y² = 12x", "x² = -12y"],
+        correct: 0,
+        explain: "✓ Com foco (0, 3) e diretriz y = −3, temos p = 3. A equação é x² = 4py = 12y."
+      }
+    ]
+  },
+  {
+    tag: "Sala 2 — Central de Navegação",
+    title: "Elipse",
+    desc: "As órbitas planetárias são elípticas! Configure a rota de fuga usando as equações corretas.",
+    questions: [
+      {
+        text: "A órbita de um satélite é descrita pela equação abaixo. Quais são os comprimentos dos semieixos a e b?",
+        formula: "x²/25 + y²/9 = 1",
+        options: ["a = 5, b = 3", "a = 25, b = 9", "a = 3, b = 5", "a = 10, b = 6"],
+        correct: 0,
+        explain: "✓ Na forma x²/a² + y²/b² = 1, lemos a² = 25 → a = 5 e b² = 9 → b = 3."
+      },
+      {
+        text: "Uma elipse tem focos em F₁(−4, 0) e F₂(4, 0) e a soma das distâncias de qualquer ponto aos focos é 10. Qual é a equação desta elipse?",
+        formula: null,
+        options: ["x²/25 + y²/9 = 1", "x²/9 + y²/25 = 1", "x²/16 + y²/9 = 1", "x²/100 + y²/16 = 1"],
+        correct: 0,
+        explain: "✓ 2a = 10 → a = 5. c = 4. b² = a² − c² = 25 − 16 = 9. Equação: x²/25 + y²/9 = 1."
+      },
+      {
+        text: "Qual é a excentricidade de uma elipse com a = 5 e c = 3?",
+        formula: "e = c/a",
+        options: ["e = 0,6", "e = 0,8", "e = 1,2", "e = 1,0"],
+        correct: 0,
+        explain: "✓ e = c/a = 3/5 = 0,6. Para elipses, 0 < e < 1, confirmando o resultado."
+      }
+    ]
+  },
+  {
+    tag: "Sala 3 — Comunicações",
+    title: "Hipérbole",
+    desc: "O sistema de GPS da nave usa hipérboles para triangulação. Resolva para restabelecer contato!",
+    questions: [
+      {
+        text: "Identifique as assíntotas da hipérbole abaixo:",
+        formula: "x²/9 - y²/16 = 1",
+        options: ["y = ±(4/3)x", "y = ±(3/4)x", "y = ±4x", "y = ±3x"],
+        correct: 0,
+        explain: "✓ Para x²/a² − y²/b² = 1, as assíntotas são y = ±(b/a)x = ±(4/3)x."
+      },
+      {
+        text: "Uma hipérbole tem vértices em (±3, 0) e focos em (±5, 0). Qual é sua equação?",
+        formula: null,
+        options: ["x²/9 - y²/16 = 1", "x²/25 - y²/9 = 1", "y²/9 - x²/16 = 1", "x²/16 - y²/9 = 1"],
+        correct: 0,
+        explain: "✓ a = 3, c = 5, b² = c² − a² = 25 − 9 = 16. Equação: x²/9 − y²/16 = 1."
+      },
+      {
+        text: "Qual é a excentricidade de uma hipérbole com a = 4 e c = 5?",
+        formula: "e = c/a",
+        options: ["e = 1,25", "e = 0,8", "e = 0,6", "e = 2,0"],
+        correct: 0,
+        explain: "✓ e = c/a = 5/4 = 1,25. Para hipérboles, e > 1, confirmando o resultado."
+      }
+    ]
+  }
+];
+
+let state = {};
+
+function resetGame() {
+  state = { room: 0, q: 0, score: 0, lives: 3, total: 0, correct: 0 };
+  showScreen('intro');
+}
+
+function startGame() {
+  state = { room: 0, q: 0, score: 0, lives: 3, total: 0, correct: 0 };
+  showScreen('game');
+  loadQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function loadQuestion() {
+  const room = ROOMS[state.room];
+  const q = room.questions[state.q];
+
+  document.getElementById('room-tag').textContent = room.tag;
+  document.getElementById('room-title').textContent = room.title;
+  document.getElementById('room-desc').textContent = room.desc;
+  document.getElementById('q-num').textContent = `Pergunta ${state.q + 1} de ${room.questions.length}`;
+  document.getElementById('q-text').textContent = q.text;
+
+  const fEl = document.getElementById('q-formula');
+  if (q.formula) { fEl.style.display = 'inline-block'; fEl.textContent = q.formula; }
+  else { fEl.style.display = 'none'; }
+
+  const optsEl = document.getElementById('options');
+  optsEl.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => answer(i);
+    optsEl.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btn-next').style.display = 'none';
+  updateHUD();
+  updateProgress();
+}
+
+function answer(idx) {
+  const room = ROOMS[state.room];
+  const q = room.questions[state.q];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+  state.total++;
+
+  if (idx === q.correct) {
+    btns[idx].classList.add('correct');
+    const pts = 100 + state.lives * 20;
+    state.score += pts;
+    state.correct++;
+    fb.className = 'feedback ok show';
+    fb.textContent = q.explain + '  +' + pts + ' pontos!';
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.correct].classList.add('correct');
+    state.lives--;
+    fb.className = 'feedback err show';
+    fb.textContent = '✗ Errado. ' + q.explain.replace('✓ ', '');
+    updateHUD();
+    if (state.lives <= 0) {
+      setTimeout(() => {
+        document.getElementById('go-score').textContent = state.score;
+        showScreen('gameover');
+      }, 1800);
+      return;
+    }
+  }
+
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextQuestion() {
+  state.q++;
+  const room = ROOMS[state.room];
+  if (state.q >= room.questions.length) {
+    state.room++;
+    state.q = 0;
+    if (state.room >= ROOMS.length) { showEnd(); return; }
+  }
+  loadQuestion();
+}
+
+function showEnd() {
+  const acc = state.total > 0 ? Math.round((state.correct / state.total) * 100) : 0;
+  document.getElementById('es-pts').textContent = state.score;
+  document.getElementById('es-acc').textContent = acc + '%';
+  document.getElementById('es-lives').textContent = state.lives;
+
+  let stars = '⭐', title = 'Missão concluída!', sub = 'Você escapou, mas pode melhorar. Revise os pontos errados.';
+  if (acc >= 90 && state.lives === 3) { stars = '⭐⭐⭐'; title = 'Engenheiro Mestre!'; sub = 'Perfeito! Você domina as cônicas por completo.'; }
+  else if (acc >= 70) { stars = '⭐⭐'; title = 'Missão concluída!'; sub = 'Bom trabalho! Revise os pontos que errou.'; }
+
+  document.getElementById('end-stars').textContent = stars;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-sub').textContent = sub;
+  showScreen('end');
+}
+
+function updateHUD() {
+  document.getElementById('hud-score').textContent = state.score;
+  const hearts = '♥'.repeat(Math.max(0, state.lives)) + '♡'.repeat(Math.max(0, 3 - state.lives));
+  document.getElementById('hud-lives').textContent = hearts;
+
+  const dots = document.getElementById('room-dots');
+  dots.innerHTML = '';
+  ROOMS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'room-dot' + (i < state.room ? ' done' : i === state.room ? ' active' : '');
+    dots.appendChild(d);
+  });
+}
+
+function updateProgress() {
+  const total = ROOMS.reduce((s, r) => s + r.questions.length, 0);
+  const done = ROOMS.slice(0, state.room).reduce((s, r) => s + r.questions.length, 0) + state.q;
+  document.getElementById('prog-fill').style.width = Math.round((done / total) * 100) + '%';
+}
+
+resetGame();
+</script>
+</body>
+</html>
