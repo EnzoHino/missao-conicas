@@ -3,542 +3,876 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Missão Cônicas — Escape Room Espacial</title>
+  <title>Engenheiro Espacial — Cônicas</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0e1a;
-      --bg2: #111827;
-      --bg3: #1e2a3a;
-      --border: rgba(100,160,255,0.15);
-      --border2: rgba(100,160,255,0.3);
-      --text: #e8f0fe;
-      --text2: #8ba3c7;
-      --text3: #4a6080;
-      --blue: #3b82f6;
-      --blue2: #1d4ed8;
-      --teal: #14b8a6;
-      --teal2: #0d9488;
-      --red: #ef4444;
-      --green: #22c55e;
-      --amber: #f59e0b;
-      --radius: 10px;
-      --radius2: 14px;
+      --bg-deep:    #060b18;
+      --bg-dark:    #0a0e1a;
+      --bg-panel:   #0f1629;
+      --bg-bar:     #111827;
+      --border:     #1f2937;
+      --border-mid: #374151;
+      --text-main:  #e8eaf0;
+      --text-muted: #6b7280;
+      --text-dim:   #374151;
+      --blue:       #3b82f6;
+      --blue-dark:  #1d4ed8;
+      --blue-hover: #2563eb;
+      --blue-bg:    #1e3a5f;
+      --blue-text:  #93c5fd;
+      --green:      #4ade80;
+      --green-dark: #166534;
+      --green-bg:   #0d2818;
+      --amber:      #fbbf24;
+      --purple:     #a78bfa;
+      --pink:       #f472b6;
+      --cyan:       #22d3ee;
+      --radius:     8px;
+      --radius-lg:  12px;
     }
 
-    html, body {
+    body {
+      background: #030712;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
     }
 
-    .stars-bg {
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse at 20% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(20,184,166,0.06) 0%, transparent 50%);
-      pointer-events: none;
+    #game {
+      width: 860px;
+      max-width: 100vw;
+      background: var(--bg-dark);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 560px;
     }
 
-    #app {
-      position: relative; z-index: 1;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 1.5rem 1rem 3rem;
-      min-height: 100vh;
+    /* ── TOP BAR ── */
+    #topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      background: var(--bg-bar);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    #topbar .left { display: flex; align-items: center; gap: 10px; }
+    .game-title { font-size: 15px; font-weight: 600; color: var(--blue-text); }
+    .mission-badge {
+      background: var(--blue-bg); color: var(--blue-text);
+      font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    }
+    .pts { font-size: 14px; color: var(--amber); font-weight: 500; }
+
+    /* ── MAIN LAYOUT ── */
+    #main { display: flex; flex: 1; min-height: 0; }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+    #sidebar h3 {
+      font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .08em;
+      margin-bottom: 6px; padding-left: 4px;
+    }
+    .mission-item {
+      padding: 9px 11px; border-radius: var(--radius);
+      border: 1px solid transparent; cursor: pointer;
+    }
+    .mission-item.done  { background: var(--green-bg); border-color: #16532a; }
+    .mission-item.active { background: var(--blue-bg); border-color: var(--blue); }
+    .mission-item.locked { background: var(--bg-bar); border-color: var(--border); cursor: default; }
+    .m-title { font-size: 12px; font-weight: 500; }
+    .mission-item.done .m-title   { color: var(--green); }
+    .mission-item.active .m-title { color: var(--blue-text); }
+    .mission-item.locked .m-title { color: var(--text-dim); }
+    .m-sub { font-size: 10px; margin-top: 2px; }
+    .mission-item.done .m-sub   { color: #16a34a; }
+    .mission-item.active .m-sub { color: var(--blue); }
+    .mission-item.locked .m-sub { color: var(--text-dim); }
+
+    /* ── RIGHT COLUMN ── */
+    #canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      gap: 12px;
+      min-width: 0;
     }
 
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    /* ── HUD ── */
-    .hud {
-      display: flex; justify-content: space-between; align-items: center;
-      background: var(--bg2); border: 0.5px solid var(--border2);
-      border-radius: var(--radius2); padding: 10px 18px;
-      margin-bottom: 1rem; font-size: 14px;
+    /* ── CANVAS WRAPPER ── */
+    #sim-wrap {
+      flex: 1;
+      min-height: 240px;
+      background: var(--bg-deep);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
     }
-    .hud-item { display: flex; align-items: center; gap: 6px; }
-    .hud-label { color: var(--text2); }
-    .hud-val { font-weight: 600; color: var(--text); }
-    .lives { font-size: 18px; letter-spacing: 3px; }
-
-    .room-dots { display: flex; gap: 8px; align-items: center; }
-    .room-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--bg3); border: 1px solid var(--border2);
-      transition: background 0.3s, border-color 0.3s;
-    }
-    .room-dot.done { background: var(--teal); border-color: var(--teal); }
-    .room-dot.active { background: var(--blue); border-color: var(--blue); }
-
-    /* ── PROGRESS ── */
-    .progress-bar {
-      height: 3px; background: var(--bg3); border-radius: 2px;
-      margin-bottom: 1.5rem; overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%; background: linear-gradient(90deg, var(--blue), var(--teal));
-      border-radius: 2px; transition: width 0.4s ease;
+    #cv { display: block; width: 100%; height: 100%; }
+    #sim-label {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; color: var(--text-muted); pointer-events: none;
+      background: rgba(6,11,24,.6); padding: 2px 8px; border-radius: 20px;
     }
 
-    /* ── ROOM HEADER ── */
-    .room-header { text-align: center; margin-bottom: 1.5rem; }
-    .room-tag {
-      display: inline-block; font-size: 11px; font-weight: 600;
-      letter-spacing: 1px; text-transform: uppercase;
-      padding: 3px 12px; border-radius: 20px;
-      background: rgba(59,130,246,0.15); color: #93c5fd;
-      border: 0.5px solid rgba(59,130,246,0.3);
-      margin-bottom: 10px;
-    }
-    .room-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .room-desc { font-size: 14px; color: var(--text2); max-width: 500px; margin: 0 auto; }
-
-    /* ── QUESTION CARD ── */
-    .question-card {
-      background: var(--bg2); border: 0.5px solid var(--border2);
-      border-radius: var(--radius2); padding: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .q-num { font-size: 11px; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .q-text { font-size: 16px; font-weight: 500; line-height: 1.6; margin-bottom: 1rem; }
-    .q-formula {
-      font-family: 'Courier New', monospace; font-size: 15px;
-      background: var(--bg3); border: 0.5px solid var(--border2);
-      border-radius: var(--radius); padding: 10px 16px;
-      margin-bottom: 1.25rem; display: inline-block; color: #93c5fd;
-    }
-
-    /* ── OPTIONS ── */
-    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 480px) { .options { grid-template-columns: 1fr; } }
-
-    .opt-btn {
-      background: var(--bg3); border: 0.5px solid var(--border);
-      border-radius: var(--radius); padding: 12px 16px;
-      font-size: 14px; font-family: inherit; cursor: pointer;
-      text-align: left; color: var(--text);
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-    }
-    .opt-btn:hover:not(:disabled) {
-      background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4);
-      transform: translateY(-1px);
-    }
-    .opt-btn:active:not(:disabled) { transform: scale(0.98); }
-    .opt-btn.correct { background: rgba(34,197,94,0.15); border-color: var(--green); color: #86efac; }
-    .opt-btn.wrong { background: rgba(239,68,68,0.15); border-color: var(--red); color: #fca5a5; }
-    .opt-btn:disabled { cursor: default; }
-
-    /* ── FEEDBACK ── */
-    .feedback {
-      border-radius: var(--radius); padding: 12px 16px;
-      font-size: 14px; margin-top: 12px; line-height: 1.5;
+    /* ── FEEDBACK OVERLAY ── */
+    #feedback {
+      position: absolute; inset: 0;
       display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6,11,24,.9);
+      border-radius: var(--radius);
+      text-align: center;
+      padding: 24px;
+      gap: 8px;
     }
-    .feedback.show { display: block; }
-    .feedback.ok { background: rgba(34,197,94,0.1); border: 0.5px solid rgba(34,197,94,0.3); color: #86efac; }
-    .feedback.err { background: rgba(239,68,68,0.1); border: 0.5px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .fb-icon { font-size: 36px; }
+    .fb-title { font-size: 20px; font-weight: 600; }
+    .fb-msg { font-size: 12px; color: var(--text-muted); max-width: 280px; line-height: 1.6; }
+    #fb-btn {
+      margin-top: 8px;
+      background: var(--blue-dark); border: none; color: #fff;
+      padding: 8px 22px; border-radius: var(--radius);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    #fb-btn:hover { background: var(--blue-hover); }
 
-    .nav-row { display: flex; justify-content: flex-end; margin-top: 0.75rem; }
+    /* ── CONTROLS PANEL ── */
+    #controls {
+      background: var(--bg-bar);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px;
+      flex-shrink: 0;
+    }
+    #mission-title { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
+    #mission-desc  { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
 
-    /* ── BUTTONS ── */
-    .btn {
-      background: var(--bg2); border: 0.5px solid var(--border2);
-      border-radius: var(--radius); padding: 11px 28px;
-      font-size: 15px; font-weight: 500; font-family: inherit;
-      cursor: pointer; color: var(--text);
-      transition: background 0.15s, transform 0.1s;
+    .param-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .param-label { font-size: 11px; color: #9ca3af; width: 100px; flex-shrink: 0; }
+    .param-row input[type="range"] {
+      flex: 1; height: 4px; cursor: pointer;
+      accent-color: var(--blue);
     }
-    .btn:hover { background: var(--bg3); }
-    .btn:active { transform: scale(0.97); }
-    .btn-primary {
-      background: var(--blue2); border-color: var(--blue);
-      color: #fff;
-    }
-    .btn-primary:hover { background: var(--blue); }
+    .param-val { font-size: 12px; color: var(--text-main); width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
 
-    /* ── INTRO ── */
-    .intro-wrap { text-align: center; padding: 2rem 0; }
-    .intro-icon { font-size: 64px; margin-bottom: 1rem; line-height: 1; }
-    .intro-title { font-size: 28px; font-weight: 700; margin-bottom: 0.5rem; }
-    .intro-sub {
-      font-size: 15px; color: var(--text2); max-width: 480px;
-      margin: 0 auto 2rem; line-height: 1.7;
+    #eq-panel {
+      display: none;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #a5b4fc;
+      text-align: center;
+      margin-top: 10px;
+      font-family: 'Georgia', serif;
+      letter-spacing: .02em;
     }
-    .rooms-preview {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 10px; margin-bottom: 2rem;
-    }
-    .room-chip {
-      background: var(--bg2); border: 0.5px solid var(--border2);
-      border-radius: var(--radius); padding: 14px 10px; text-align: center;
-    }
-    .room-chip .icon { font-size: 24px; margin-bottom: 6px; }
-    .room-chip strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-    .room-chip span { font-size: 12px; color: var(--text2); }
 
-    .info-row {
-      display: flex; gap: 16px; justify-content: center;
-      margin-bottom: 2rem; flex-wrap: wrap;
+    #btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    #btn-eq {
+      background: transparent; border: 1px solid var(--border-mid);
+      color: #9ca3af; padding: 7px 14px; border-radius: var(--radius);
+      font-size: 12px; cursor: pointer; transition: all .2s;
     }
-    .info-pill {
-      background: var(--bg3); border: 0.5px solid var(--border);
-      border-radius: 20px; padding: 5px 14px; font-size: 13px; color: var(--text2);
+    #btn-eq:hover { border-color: #4b5563; color: var(--text-main); }
+    #btn-confirm {
+      background: var(--blue-dark); border: none; color: #fff;
+      padding: 7px 20px; border-radius: var(--radius);
+      font-size: 12px; font-weight: 500; cursor: pointer; transition: background .2s;
     }
-    .info-pill b { color: var(--text); }
+    #btn-confirm:hover:not(:disabled) { background: var(--blue-hover); }
+    #btn-confirm:disabled { background: var(--border); color: var(--text-dim); cursor: default; }
 
-    /* ── END ── */
-    .end-wrap { text-align: center; padding: 2rem 0; }
-    .end-stars { font-size: 48px; margin-bottom: 0.75rem; }
-    .end-title { font-size: 26px; font-weight: 700; margin-bottom: 0.5rem; }
-    .end-sub { font-size: 15px; color: var(--text2); margin-bottom: 2rem; }
-    .score-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 10px; margin-bottom: 2rem;
+    /* ── WIN SCREEN ── */
+    #win-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 40px;
+      text-align: center;
+      gap: 8px;
     }
-    .score-box {
-      background: var(--bg2); border: 0.5px solid var(--border2);
-      border-radius: var(--radius); padding: 14px;
+    .win-rocket { font-size: 52px; }
+    #win-screen h2 { font-size: 24px; color: var(--amber); font-weight: 600; margin-top: 6px; }
+    #win-screen p  { font-size: 13px; color: var(--text-muted); }
+    .win-pts { font-size: 52px; font-weight: 700; color: var(--blue-text); margin: 10px 0; }
+    #btn-restart {
+      margin-top: 10px;
+      background: var(--blue-dark); border: none; color: #fff;
+      padding: 10px 28px; border-radius: var(--radius);
+      font-size: 13px; font-weight: 500; cursor: pointer;
     }
-    .score-box .s-val { font-size: 26px; font-weight: 700; color: var(--teal); }
-    .score-box .s-lbl { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    #btn-restart:hover { background: var(--blue-hover); }
 
-    /* ── GAME OVER ── */
-    .gameover-wrap { text-align: center; padding: 2rem 0; }
-
-    /* ── TRANSITION ── */
-    .screen.active { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-    /* ── FOOTER ── */
-    .game-footer {
-      text-align: center; margin-top: 3rem;
-      font-size: 12px; color: var(--text3);
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      #main { flex-direction: column; }
+      #sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; padding: 10px; }
+      .mission-item { flex: 1 1 130px; }
     }
   </style>
 </head>
 <body>
-<div class="stars-bg"></div>
-<div id="app">
 
-  <!-- INTRO -->
-  <div id="screen-intro" class="screen active">
-    <div class="intro-wrap">
-      <div class="intro-icon">🚀</div>
-      <div class="intro-title">Missão Cônicas</div>
-      <p class="intro-sub">Você é um engenheiro espacial preso em uma estação orbitante avariada. Para escapar, resolva os desafios matemáticos sobre cônicas em cada sala da nave.</p>
-      <div class="rooms-preview">
-        <div class="room-chip">
-          <div class="icon">🔥</div>
-          <strong>Sala 1</strong>
-          <span>Parábola</span>
+<div id="game">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="left">
+      <span class="game-title">Engenheiro Espacial</span>
+      <span class="mission-badge" id="badge">Missão 1 / 5</span>
+    </div>
+    <div class="pts">Pontos: <span id="score">0</span></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <h3>missões</h3>
+      <div class="mission-item active" id="mi0">
+        <div class="m-title">Órbita do satélite</div>
+        <div class="m-sub" id="ms0">Elipse — em andamento...</div>
+      </div>
+      <div class="mission-item locked" id="mi1">
+        <div class="m-title">Refletor da antena</div>
+        <div class="m-sub" id="ms1">Parábola — bloqueada</div>
+      </div>
+      <div class="mission-item locked" id="mi2">
+        <div class="m-title">Rota de fuga</div>
+        <div class="m-sub" id="ms2">Hipérbole — bloqueada</div>
+      </div>
+      <div class="mission-item locked" id="mi3">
+        <div class="m-title">Telescópio espacial</div>
+        <div class="m-sub" id="ms3">Parábola — bloqueada</div>
+      </div>
+      <div class="mission-item locked" id="mi4">
+        <div class="m-title">Órbita de transferência</div>
+        <div class="m-sub" id="ms4">Elipse — bloqueada</div>
+      </div>
+    </div>
+
+    <!-- CANVAS + CONTROLS -->
+    <div id="canvas-area">
+
+      <div id="sim-wrap">
+        <canvas id="cv"></canvas>
+        <div id="sim-label">elipse — foco ativo</div>
+
+        <div id="feedback">
+          <div class="fb-icon" id="fb-icon">✓</div>
+          <div class="fb-title" id="fb-title">Missão concluída!</div>
+          <div class="fb-msg"  id="fb-msg">Parâmetros corretos.</div>
+          <button id="fb-btn">Próxima missão</button>
         </div>
-        <div class="room-chip">
-          <div class="icon">🪐</div>
-          <strong>Sala 2</strong>
-          <span>Elipse</span>
+      </div>
+
+      <div id="controls">
+        <div id="mission-title">Posicione o satélite em órbita elíptica</div>
+        <div id="mission-desc">Descrição carregando...</div>
+        <div id="params"></div>
+        <div id="eq-panel"></div>
+        <div id="btn-row">
+          <button id="btn-eq">Ver equação</button>
+          <button id="btn-confirm">Confirmar missão</button>
         </div>
-        <div class="room-chip">
-          <div class="icon">📡</div>
-          <strong>Sala 3</strong>
-          <span>Hipérbole</span>
-        </div>
       </div>
-      <div class="info-row">
-        <div class="info-pill"><b>9</b> questões</div>
-        <div class="info-pill"><b>3</b> vidas</div>
-        <div class="info-pill">Feedback em cada resposta</div>
-        <div class="info-pill">Classificação por estrelas</div>
-      </div>
-      <button class="btn btn-primary" onclick="startGame()">Iniciar missão →</button>
+
     </div>
   </div>
 
-  <!-- GAME -->
-  <div id="screen-game" class="screen">
-    <div class="hud">
-      <div class="hud-item">
-        <span class="hud-label">Pontos</span>
-        <span class="hud-val" id="hud-score">0</span>
-      </div>
-      <div class="room-dots" id="room-dots"></div>
-      <div class="hud-item">
-        <span class="lives" id="hud-lives">♥♥♥</span>
-      </div>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
-    </div>
-    <div class="room-header">
-      <div class="room-tag" id="room-tag"></div>
-      <div class="room-title" id="room-title"></div>
-      <div class="room-desc" id="room-desc"></div>
-    </div>
-    <div class="question-card">
-      <div class="q-num" id="q-num"></div>
-      <div class="q-text" id="q-text"></div>
-      <div class="q-formula" id="q-formula" style="display:none"></div>
-      <div class="options" id="options"></div>
-      <div class="feedback" id="feedback"></div>
-    </div>
-    <div class="nav-row">
-      <button class="btn btn-primary" id="btn-next" style="display:none" onclick="nextQuestion()">Próximo →</button>
-    </div>
+  <!-- WIN SCREEN -->
+  <div id="win-screen">
+    <div class="win-rocket">🚀</div>
+    <h2>Missão completa, Engenheiro!</h2>
+    <p>Você completou todas as 5 missões com sucesso.</p>
+    <div class="win-pts" id="final-pts">0</div>
+    <p>pontos acumulados</p>
+    <button id="btn-restart">Jogar novamente</button>
   </div>
 
-  <!-- GAME OVER -->
-  <div id="screen-gameover" class="screen">
-    <div class="gameover-wrap">
-      <div style="font-size:64px;margin-bottom:1rem">💀</div>
-      <div class="end-title">Missão falhou</div>
-      <p class="end-sub">Você ficou sem vidas. Estude as cônicas e tente novamente!</p>
-      <p style="font-size:15px;color:var(--text2);margin-bottom:1.5rem">Pontuação: <strong id="go-score" style="color:var(--text)">0</strong></p>
-      <button class="btn btn-primary" onclick="resetGame()">Tentar novamente</button>
-    </div>
-  </div>
-
-  <!-- END -->
-  <div id="screen-end" class="screen">
-    <div class="end-wrap">
-      <div class="end-stars" id="end-stars">⭐⭐⭐</div>
-      <div class="end-title" id="end-title"></div>
-      <p class="end-sub" id="end-sub"></p>
-      <div class="score-grid">
-        <div class="score-box"><div class="s-val" id="es-pts">0</div><div class="s-lbl">Pontos</div></div>
-        <div class="score-box"><div class="s-val" id="es-acc">0%</div><div class="s-lbl">Precisão</div></div>
-        <div class="score-box"><div class="s-val" id="es-lives">0</div><div class="s-lbl">Vidas restantes</div></div>
-      </div>
-      <button class="btn btn-primary" onclick="resetGame()">Jogar novamente</button>
-    </div>
-  </div>
-
-  <div class="game-footer">Missão Cônicas — Trabalho de Seções Cônicas 2026</div>
 </div>
 
 <script>
-const ROOMS = [
+/* ─────────────────────────────────────────
+   MISSION DATA
+───────────────────────────────────────── */
+const MISSIONS = [
+  /* 0 — ELIPSE: satélite */
   {
-    tag: "Sala 1 — Módulo de Propulsão",
-    title: "Parábola",
-    desc: "Os motores usam câmaras parabólicas para focar energia. Resolva os desafios para religar o sistema!",
-    questions: [
-      {
-        text: "O espelho de um telescópio tem forma parabólica com a equação abaixo. Qual é o vértice desta parábola?",
-        formula: "y = 2x² - 8x + 6",
-        options: ["(2, -2)", "(4, 6)", "(-2, 0)", "(0, 6)"],
-        correct: 0,
-        explain: "✓ Completando o quadrado: y = 2(x−2)² − 2. O vértice é (2, −2)."
-      },
-      {
-        text: "Uma trajetória balística segue uma curva parabólica. Qual das equações abaixo representa uma parábola com eixo horizontal (abertura para a direita)?",
-        formula: null,
-        options: ["y² = 8x", "x² = -4y", "y = x² + 3", "x² + y² = 9"],
-        correct: 0,
-        explain: "✓ A forma y² = 4px representa parábola horizontal. Com p = 2 > 0, abre para a direita."
-      },
-      {
-        text: "A antena parabólica da nave tem foco no ponto F(0, 3) e diretriz y = −3. Qual é a equação desta parábola?",
-        formula: null,
-        options: ["x² = 12y", "x² = 6y", "y² = 12x", "x² = -12y"],
-        correct: 0,
-        explain: "✓ Com foco (0, 3) e diretriz y = −3, temos p = 3. A equação é x² = 4py = 12y."
-      }
-    ]
+    title: "Posicione o satélite em órbita elíptica",
+    desc:  "A órbita de um satélite segue uma elipse com a Terra em um dos focos. Ajuste os semi-eixos a e b para que o satélite alcance a órbita alvo (a ≈ 5, b ≈ 3).",
+    label: "elipse — foco ativo",
+    type:  "ellipse",
+    params: [
+      { id:"a", label:"Semi-eixo a", min:1, max:9, step:0.1, val:3, target:5 },
+      { id:"b", label:"Semi-eixo b", min:1, max:7, step:0.1, val:2, target:3 }
+    ],
+    eqFn: p => `x² / ${p.a.toFixed(1)}²  +  y² / ${p.b.toFixed(1)}²  =  1`,
+    check: p => Math.abs(p.a - 5) < 0.45 && Math.abs(p.b - 3) < 0.45,
+    successMsg: "Órbita elíptica confirmada! O satélite está em trajetória estável ao redor da Terra.",
+    failMsg:    "Os semi-eixos ainda não batem com a órbita alvo. Tente: a ≈ 5 e b ≈ 3.",
+    draw(ctx, W, H, p) {
+      const cx = W/2, cy = H/2, sc = Math.min(W, H) * 0.085;
+      const a = p.a * sc, b = p.b * sc;
+      const ta = 5 * sc, tb = 3 * sc;
+
+      /* stars */
+      drawStars(ctx, W, H);
+
+      /* target orbit */
+      ctx.save();
+      ctx.strokeStyle = "#1f4060"; ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
+      ctx.beginPath(); ctx.ellipse(cx, cy, ta, tb, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      /* current orbit */
+      ctx.save();
+      ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+
+      /* Earth */
+      drawEarth(ctx, cx, cy, 10);
+
+      /* animated satellite */
+      const t = Date.now() / 1400;
+      const sx = cx + a * Math.cos(t), sy = cy + b * Math.sin(t);
+      ctx.save();
+      ctx.strokeStyle = "rgba(251,191,36,.25)"; ctx.lineWidth = .8; ctx.setLineDash([2,4]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+      ctx.setLineDash([]); ctx.restore();
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI*2); ctx.fill();
+
+      /* focus dot */
+      const fc = Math.sqrt(Math.max(0, a*a - b*b));
+      ctx.fillStyle = "rgba(59,130,246,.4)";
+      ctx.beginPath(); ctx.arc(cx + fc, cy, 3, 0, Math.PI*2); ctx.fill();
+
+      /* labels */
+      label(ctx, "Terra", cx + 13, cy + 5, "#9ca3af");
+      label(ctx, "satélite", sx + 8, sy, "#fbbf24");
+      label(ctx, "órbita alvo", cx - ta + 4, cy - tb - 8, "#1f4060");
+    }
   },
+
+  /* 1 — PARÁBOLA: refletor */
   {
-    tag: "Sala 2 — Central de Navegação",
-    title: "Elipse",
-    desc: "As órbitas planetárias são elípticas! Configure a rota de fuga usando as equações corretas.",
-    questions: [
-      {
-        text: "A órbita de um satélite é descrita pela equação abaixo. Quais são os comprimentos dos semieixos a e b?",
-        formula: "x²/25 + y²/9 = 1",
-        options: ["a = 5, b = 3", "a = 25, b = 9", "a = 3, b = 5", "a = 10, b = 6"],
-        correct: 0,
-        explain: "✓ Na forma x²/a² + y²/b² = 1, lemos a² = 25 → a = 5 e b² = 9 → b = 3."
-      },
-      {
-        text: "Uma elipse tem focos em F₁(−4, 0) e F₂(4, 0) e a soma das distâncias de qualquer ponto aos focos é 10. Qual é a equação desta elipse?",
-        formula: null,
-        options: ["x²/25 + y²/9 = 1", "x²/9 + y²/25 = 1", "x²/16 + y²/9 = 1", "x²/100 + y²/16 = 1"],
-        correct: 0,
-        explain: "✓ 2a = 10 → a = 5. c = 4. b² = a² − c² = 25 − 16 = 9. Equação: x²/25 + y²/9 = 1."
-      },
-      {
-        text: "Qual é a excentricidade de uma elipse com a = 5 e c = 3?",
-        formula: "e = c/a",
-        options: ["e = 0,6", "e = 0,8", "e = 1,2", "e = 1,0"],
-        correct: 0,
-        explain: "✓ e = c/a = 3/5 = 0,6. Para elipses, 0 < e < 1, confirmando o resultado."
+    title: "Calibre o refletor parabólico da antena",
+    desc:  "Um refletor parabólico concentra sinais de rádio em seu foco. Ajuste o parâmetro p até o foco coincidir com o receptor (p ≈ 2).",
+    label: "parábola — foco ativo",
+    type:  "parabola",
+    params: [
+      { id:"p", label:"Parâmetro p", min:0.5, max:5, step:0.1, val:1, target:2 }
+    ],
+    eqFn: p => `x²  =  ${(4 * p.p).toFixed(1)} · y`,
+    check: p => Math.abs(p.p - 2) < 0.4,
+    successMsg: "Foco alinhado! O refletor está concentrando o sinal corretamente no receptor.",
+    failMsg:    "O foco não coincide com o receptor. Ajuste p para ≈ 2.",
+    draw(ctx, W, H, p) {
+      const cx = W/2, cy = H * 0.78, sc = Math.min(W, H) * 0.1;
+      const pv = p.p * sc, tp = 2 * sc;
+      const xRange = 3.2;
+
+      drawStars(ctx, W, H);
+
+      /* target parabola */
+      ctx.save();
+      ctx.strokeStyle = "#2e1a5e"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      for (let x = -xRange; x <= xRange; x += 0.02) {
+        const px = cx + x * sc, py = cy - (x*x*sc) / (4*2);
+        x === -xRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
       }
-    ]
+      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+
+      /* current parabola */
+      ctx.save();
+      ctx.strokeStyle = "#a78bfa"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = -xRange; x <= xRange; x += 0.015) {
+        const px = cx + x * sc, py = cy - (x*x*sc) / (4 * p.p);
+        x === -xRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.restore();
+
+      /* horizontal guide lines (incoming signal rays) */
+      ctx.save();
+      ctx.strokeStyle = "rgba(167,139,250,.18)"; ctx.lineWidth = .8; ctx.setLineDash([2,4]);
+      for (let x = -xRange; x <= xRange; x += .7) {
+        const px = cx + x * sc, pyOnPar = cy - (x*x*sc) / (4 * p.p);
+        ctx.beginPath(); ctx.moveTo(W * .02, pyOnPar); ctx.lineTo(px, pyOnPar); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.restore();
+
+      /* target receiver */
+      const tfy = cy - tp;
+      ctx.strokeStyle = "rgba(30,100,60,.5)"; ctx.lineWidth = .8; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(cx - W*.4, tfy); ctx.lineTo(cx + W*.4, tfy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#10b981";
+      ctx.beginPath(); ctx.arc(cx, tfy, 6, 0, Math.PI*2); ctx.fill();
+
+      /* current focus */
+      const fy = cy - pv;
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(cx, fy, 6, 0, Math.PI*2); ctx.fill();
+
+      /* base */
+      ctx.fillStyle = "#1f2937";
+      ctx.fillRect(cx - 18, cy, 36, 8);
+
+      label(ctx, "foco atual",      cx + 9, fy + 3,  "#fbbf24");
+      label(ctx, "receptor (alvo)", cx + 9, tfy + 14, "#10b981");
+      label(ctx, "antena",          cx - 16, cy + 20, "#6b7280");
+    }
   },
+
+  /* 2 — HIPÉRBOLE: rota de fuga */
   {
-    tag: "Sala 3 — Comunicações",
-    title: "Hipérbole",
-    desc: "O sistema de GPS da nave usa hipérboles para triangulação. Resolva para restabelecer contato!",
-    questions: [
-      {
-        text: "Identifique as assíntotas da hipérbole abaixo:",
-        formula: "x²/9 - y²/16 = 1",
-        options: ["y = ±(4/3)x", "y = ±(3/4)x", "y = ±4x", "y = ±3x"],
-        correct: 0,
-        explain: "✓ Para x²/a² − y²/b² = 1, as assíntotas são y = ±(b/a)x = ±(4/3)x."
-      },
-      {
-        text: "Uma hipérbole tem vértices em (±3, 0) e focos em (±5, 0). Qual é sua equação?",
-        formula: null,
-        options: ["x²/9 - y²/16 = 1", "x²/25 - y²/9 = 1", "y²/9 - x²/16 = 1", "x²/16 - y²/9 = 1"],
-        correct: 0,
-        explain: "✓ a = 3, c = 5, b² = c² − a² = 25 − 9 = 16. Equação: x²/9 − y²/16 = 1."
-      },
-      {
-        text: "Qual é a excentricidade de uma hipérbole com a = 4 e c = 5?",
-        formula: "e = c/a",
-        options: ["e = 1,25", "e = 0,8", "e = 0,6", "e = 2,0"],
-        correct: 0,
-        explain: "✓ e = c/a = 5/4 = 1,25. Para hipérboles, e > 1, confirmando o resultado."
+    title: "Calcule a rota de fuga hiperbólica",
+    desc:  "Uma nave em velocidade de escape segue uma hipérbole com o planeta no foco. Ajuste os parâmetros para a trajetória correta (a ≈ 3, b ≈ 2).",
+    label: "hipérbole — rota de fuga",
+    type:  "hyperbola",
+    params: [
+      { id:"a", label:"Semi-eixo a", min:1, max:6, step:0.1, val:2, target:3 },
+      { id:"b", label:"Semi-eixo b", min:1, max:5, step:0.1, val:1.5, target:2 }
+    ],
+    eqFn: p => `x² / ${p.a.toFixed(1)}²  −  y² / ${p.b.toFixed(1)}²  =  1`,
+    check: p => Math.abs(p.a - 3) < 0.45 && Math.abs(p.b - 2) < 0.45,
+    successMsg: "Trajetória hiperbólica confirmada! A nave vai escapar do campo gravitacional.",
+    failMsg:    "Rota incorreta. Ajuste a ≈ 3 e b ≈ 2.",
+    draw(ctx, W, H, p) {
+      const cx = W/2, cy = H/2, sc = Math.min(W, H) * 0.085;
+      const a = p.a * sc, b = p.b * sc;
+      const ta = 3 * sc, tb = 2 * sc;
+
+      drawStars(ctx, W, H);
+
+      /* asymptotes (target) */
+      ctx.save();
+      ctx.strokeStyle = "#1a2a1a"; ctx.lineWidth = .8; ctx.setLineDash([3,5]);
+      const slope = tb / ta;
+      ctx.beginPath();
+      ctx.moveTo(cx - W/2, cy - slope * W/2); ctx.lineTo(cx + W/2, cy + slope * W/2);
+      ctx.moveTo(cx - W/2, cy + slope * W/2); ctx.lineTo(cx + W/2, cy - slope * W/2);
+      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+
+      /* target hyperbola */
+      ctx.save();
+      ctx.strokeStyle = "#2a0f20"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+      for (const sgn of [1, -1]) {
+        ctx.beginPath();
+        for (let t = -1.6; t <= 1.6; t += 0.02) {
+          const x = cx + sgn * ta * Math.cosh(t), y = cy + tb * Math.sinh(t);
+          t === -1.6 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
       }
-    ]
+      ctx.setLineDash([]); ctx.restore();
+
+      /* current hyperbola */
+      ctx.save();
+      ctx.strokeStyle = "#f472b6"; ctx.lineWidth = 2;
+      for (const sgn of [1, -1]) {
+        ctx.beginPath();
+        for (let t = -1.6; t <= 1.6; t += 0.015) {
+          const x = cx + sgn * a * Math.cosh(t), y = cy + b * Math.sinh(t);
+          t === -1.6 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      /* planet (focus) */
+      const c = Math.sqrt(a*a + b*b);
+      ctx.fillStyle = "#1d4ed8";
+      ctx.beginPath(); ctx.arc(cx + c, cy, 9, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#3b82f6";
+      ctx.beginPath(); ctx.arc(cx + c, cy, 7, 0, Math.PI*2); ctx.fill();
+
+      /* animated ship on left branch */
+      const t0 = (Date.now() / 1400) % 2.4 - 1.2;
+      const nx = cx - a * Math.cosh(t0), ny = cy + b * Math.sinh(t0);
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath(); ctx.arc(nx, ny, 5, 0, Math.PI*2); ctx.fill();
+
+      label(ctx, "planeta", cx + c + 11, cy + 4, "#60a5fa");
+      label(ctx, "nave",    nx + 8,      ny,      "#fbbf24");
+      label(ctx, "rota alvo", cx - ta - 60, cy - tb - 6, "#2a0f20");
+    }
+  },
+
+  /* 3 — PARÁBOLA: telescópio */
+  {
+    title: "Aponte o telescópio para a estrela",
+    desc:  "O espelho primário de um telescópio é parabólico. O foco deve coincidir com o detector. Ajuste p para que o sinal converja ao detector (p ≈ 3).",
+    label: "parábola — espelho primário",
+    type:  "parabola",
+    params: [
+      { id:"p", label:"Parâmetro p", min:0.5, max:6, step:0.1, val:1.5, target:3 }
+    ],
+    eqFn: p => `y²  =  ${(4 * p.p).toFixed(1)} · x`,
+    check: p => Math.abs(p.p - 3) < 0.4,
+    successMsg: "Telescópio calibrado! A estrela está em foco perfeito no detector.",
+    failMsg:    "O foco está desalinhado. Ajuste p ≈ 3.",
+    draw(ctx, W, H, p) {
+      const cx = W * 0.22, cy = H/2, sc = Math.min(W, H) * 0.095;
+      const pv = p.p * sc, tp = 3 * sc;
+      const yRange = 2.8;
+
+      drawStars(ctx, W, H);
+
+      /* target parabola */
+      ctx.save();
+      ctx.strokeStyle = "#2e1a5e"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      for (let y = -yRange; y <= yRange; y += 0.03) {
+        const py = cy + y * sc, px = cx + (y*y*sc) / (4*3);
+        y === -yRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+
+      /* current parabola */
+      ctx.save();
+      ctx.strokeStyle = "#a78bfa"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let y = -yRange; y <= yRange; y += 0.015) {
+        const py = cy + y * sc, px = cx + (y*y*sc) / (4 * p.p);
+        y === -yRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.restore();
+
+      /* incoming rays */
+      ctx.save();
+      ctx.strokeStyle = "rgba(253,230,138,.15)"; ctx.lineWidth = .8; ctx.setLineDash([2,4]);
+      for (let y = -yRange; y <= yRange; y += .6) {
+        const py = cy + y * sc, pxOnPar = cx + (y*y*sc) / (4 * p.p);
+        ctx.beginPath(); ctx.moveTo(W * .96, py); ctx.lineTo(pxOnPar, py); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.restore();
+
+      /* target detector */
+      const tfx = cx + tp;
+      ctx.strokeStyle = "rgba(16,185,129,.4)"; ctx.lineWidth = .8; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(tfx, cy - H*.45); ctx.lineTo(tfx, cy + H*.45); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#10b981";
+      ctx.beginPath(); ctx.arc(tfx, cy, 6, 0, Math.PI*2); ctx.fill();
+
+      /* current focus */
+      const fx = cx + pv;
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(fx, cy, 6, 0, Math.PI*2); ctx.fill();
+
+      /* star (source) */
+      const sx = W * 0.92, sy = H * 0.25;
+      drawStar6(ctx, sx, sy, 6, "#fde68a");
+
+      label(ctx, "foco atual", fx + 8, cy - 8, "#fbbf24");
+      label(ctx, "detector",   tfx + 8, cy + 14, "#10b981");
+      label(ctx, "estrela",    sx + 8, sy + 4, "#fde68a");
+    }
+  },
+
+  /* 4 — ELIPSE: transferência de Hohmann */
+  {
+    title: "Órbita de transferência de Hohmann",
+    desc:  "A manobra de Hohmann usa uma elipse que tangencia duas órbitas circulares. Ajuste a e b para conectar a órbita baixa (r=2.5) com a órbita alta (r=6).",
+    label: "elipse — transferência orbital",
+    type:  "ellipse",
+    params: [
+      { id:"a", label:"Semi-eixo a", min:2, max:10, step:0.1, val:4, target:6 },
+      { id:"b", label:"Semi-eixo b", min:1, max:8,  step:0.1, val:2.5, target:4 }
+    ],
+    eqFn: p => `x² / ${p.a.toFixed(1)}²  +  y² / ${p.b.toFixed(1)}²  =  1`,
+    check: p => Math.abs(p.a - 6) < 0.45 && Math.abs(p.b - 4) < 0.45,
+    successMsg: "Transferência orbital confirmada! A nave chegará à órbita alta com manobra de mínimo combustível.",
+    failMsg:    "A elipse não conecta as duas órbitas. Tente a ≈ 6 e b ≈ 4.",
+    draw(ctx, W, H, p) {
+      const cx = W/2, cy = H/2, sc = Math.min(W, H) * 0.072;
+      const a = p.a * sc, b = p.b * sc;
+      const r1 = 2.5 * sc, r2 = 6 * sc;
+      const ta = 6 * sc, tb = 4 * sc;
+
+      drawStars(ctx, W, H);
+
+      /* orbits */
+      ctx.save();
+      ctx.strokeStyle = "#22d3ee"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, r1, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, r2, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+
+      /* target transfer ellipse */
+      ctx.save();
+      ctx.strokeStyle = "#1f3a1f"; ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
+      ctx.beginPath(); ctx.ellipse(cx, cy, ta, tb, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]); ctx.restore();
+
+      /* current transfer ellipse */
+      ctx.save();
+      ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+
+      /* Earth */
+      drawEarth(ctx, cx, cy, 9);
+
+      /* satellites */
+      const t1 = Date.now() / 1200;
+      const s1x = cx + r1 * Math.cos(t1), s1y = cy + r1 * Math.sin(t1);
+      ctx.fillStyle = "#22d3ee";
+      ctx.beginPath(); ctx.arc(s1x, s1y, 4, 0, Math.PI*2); ctx.fill();
+
+      const t2 = Date.now() / 2600;
+      const s2x = cx + r2 * Math.cos(t2 + Math.PI), s2y = cy + r2 * Math.sin(t2 + Math.PI);
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath(); ctx.arc(s2x, s2y, 4, 0, Math.PI*2); ctx.fill();
+
+      label(ctx, "Terra",      cx + 12, cy + 4,    "#9ca3af");
+      label(ctx, "órbita baixa", cx + r1 + 4, cy + 4, "#0e7490");
+      label(ctx, "órbita alta",  cx + r2 + 4, cy + 4, "#92400e");
+      label(ctx, "alvo",         cx - ta + 6, cy - tb - 6, "#1f3a1f");
+    }
   }
 ];
 
-let state = {};
+/* ─────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────── */
+const STARS = Array.from({length:80}, (_,i) => ({
+  x: (Math.sin(i * 137.508) * .5 + .5),
+  y: (Math.cos(i * 97.306)  * .5 + .5),
+  r: i % 7 === 0 ? .9 : i % 3 === 0 ? .6 : .3,
+  bright: i % 11 === 0
+}));
 
-function resetGame() {
-  state = { room: 0, q: 0, score: 0, lives: 3, total: 0, correct: 0 };
-  showScreen('intro');
+function drawStars(ctx, W, H) {
+  for (const s of STARS) {
+    ctx.fillStyle = s.bright ? "#475569" : "#1f2937";
+    ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI*2); ctx.fill();
+  }
 }
 
-function startGame() {
-  state = { room: 0, q: 0, score: 0, lives: 3, total: 0, correct: 0 };
-  showScreen('game');
-  loadQuestion();
+function drawEarth(ctx, cx, cy, r) {
+  ctx.fillStyle = "#1a5c38";
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#1d6b3a";
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#4ade80";
+  ctx.beginPath(); ctx.arc(cx - r*.2, cy - r*.1, r * .55, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#2563eb";
+  ctx.beginPath(); ctx.arc(cx + r*.25, cy + r*.2, r * .4, 0, Math.PI*2); ctx.fill();
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
+function drawStar6(ctx, x, y, r, color) {
+  ctx.fillStyle = color;
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI*2 - Math.PI/2;
+    const ex = x + Math.cos(a) * r, ey = y + Math.sin(a) * r;
+    ctx.beginPath(); ctx.arc(ex, ey, 1.2, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.beginPath(); ctx.arc(x, y, r * .55, 0, Math.PI*2); ctx.fill();
 }
 
-function loadQuestion() {
-  const room = ROOMS[state.room];
-  const q = room.questions[state.q];
+function label(ctx, text, x, y, color) {
+  ctx.fillStyle = color;
+  ctx.font = "10px Inter, system-ui, sans-serif";
+  ctx.fillText(text, x, y);
+}
 
-  document.getElementById('room-tag').textContent = room.tag;
-  document.getElementById('room-title').textContent = room.title;
-  document.getElementById('room-desc').textContent = room.desc;
-  document.getElementById('q-num').textContent = `Pergunta ${state.q + 1} de ${room.questions.length}`;
-  document.getElementById('q-text').textContent = q.text;
+/* ─────────────────────────────────────────
+   GAME STATE
+───────────────────────────────────────── */
+let current = 0, score = 0, answered = false, eqVisible = false;
+let pValues = {};
+let animId = null;
 
-  const fEl = document.getElementById('q-formula');
-  if (q.formula) { fEl.style.display = 'inline-block'; fEl.textContent = q.formula; }
-  else { fEl.style.display = 'none'; }
+const canvas = document.getElementById("cv");
+const ctx    = canvas.getContext("2d");
 
-  const optsEl = document.getElementById('options');
-  optsEl.innerHTML = '';
-  q.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'opt-btn';
-    btn.textContent = opt;
-    btn.onclick = () => answer(i);
-    optsEl.appendChild(btn);
+function resizeCanvas() {
+  const wrap = document.getElementById("sim-wrap");
+  const rect  = wrap.getBoundingClientRect();
+  canvas.width  = rect.width  || 560;
+  canvas.height = rect.height || 260;
+}
+
+/* ── RENDER LOOP ── */
+function render() {
+  resizeCanvas();
+  ctx.fillStyle = "#060b18";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  MISSIONS[current].draw(ctx, canvas.width, canvas.height, getP());
+  animId = requestAnimationFrame(render);
+}
+
+function getP() {
+  const p = {};
+  MISSIONS[current].params.forEach(pr => { p[pr.id] = parseFloat(pValues[pr.id] ?? pr.val); });
+  return p;
+}
+
+/* ── BUILD CONTROLS ── */
+function buildControls() {
+  const m = MISSIONS[current];
+  document.getElementById("mission-title").textContent = m.title;
+  document.getElementById("mission-desc").textContent  = m.desc;
+  document.getElementById("sim-label").textContent      = m.label;
+
+  pValues = {};
+  const cont = document.getElementById("params");
+  cont.innerHTML = "";
+
+  m.params.forEach(pr => {
+    pValues[pr.id] = pr.val;
+
+    const row   = document.createElement("div"); row.className = "param-row";
+    const lbl   = document.createElement("div"); lbl.className = "param-label"; lbl.textContent = pr.label;
+    const inp   = document.createElement("input");
+    inp.type  = "range";
+    inp.min   = pr.min; inp.max = pr.max; inp.step = pr.step; inp.value = pr.val;
+    const valEl = document.createElement("div"); valEl.className = "param-val";
+    valEl.textContent = pr.val.toFixed(1);
+
+    inp.addEventListener("input", () => {
+      pValues[pr.id] = parseFloat(inp.value);
+      valEl.textContent = parseFloat(inp.value).toFixed(1);
+      if (eqVisible) updateEq();
+    });
+
+    row.append(lbl, inp, valEl);
+    cont.appendChild(row);
   });
 
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('btn-next').style.display = 'none';
-  updateHUD();
-  updateProgress();
+  eqVisible = false;
+  document.getElementById("eq-panel").style.display = "none";
+  document.getElementById("btn-eq").textContent = "Ver equação";
+  document.getElementById("btn-confirm").disabled = false;
+  document.getElementById("feedback").style.display = "none";
+  answered = false;
+  updateEq();
 }
 
-function answer(idx) {
-  const room = ROOMS[state.room];
-  const q = room.questions[state.q];
-  const btns = document.querySelectorAll('.opt-btn');
-  btns.forEach(b => b.disabled = true);
+function updateEq() {
+  document.getElementById("eq-panel").textContent = MISSIONS[current].eqFn(getP());
+}
 
-  const fb = document.getElementById('feedback');
-  state.total++;
-
-  if (idx === q.correct) {
-    btns[idx].classList.add('correct');
-    const pts = 100 + state.lives * 20;
-    state.score += pts;
-    state.correct++;
-    fb.className = 'feedback ok show';
-    fb.textContent = q.explain + '  +' + pts + ' pontos!';
-  } else {
-    btns[idx].classList.add('wrong');
-    btns[q.correct].classList.add('correct');
-    state.lives--;
-    fb.className = 'feedback err show';
-    fb.textContent = '✗ Errado. ' + q.explain.replace('✓ ', '');
-    updateHUD();
-    if (state.lives <= 0) {
-      setTimeout(() => {
-        document.getElementById('go-score').textContent = state.score;
-        showScreen('gameover');
-      }, 1800);
-      return;
+/* ── SIDEBAR ── */
+function updateSidebar() {
+  const types = ["Elipse","Parábola","Hipérbole","Parábola","Elipse"];
+  for (let i = 0; i < 5; i++) {
+    const el  = document.getElementById("mi" + i);
+    const sub = document.getElementById("ms" + i);
+    if (i < current) {
+      el.className  = "mission-item done";
+      sub.textContent = types[i] + " — concluída ✓";
+    } else if (i === current) {
+      el.className  = "mission-item active";
+      sub.textContent = types[i] + " — em andamento...";
+    } else {
+      el.className  = "mission-item locked";
+      sub.textContent = types[i] + " — bloqueada";
     }
   }
-
-  document.getElementById('btn-next').style.display = 'block';
+  document.getElementById("badge").textContent = "Missão " + (current + 1) + " / 5";
 }
 
-function nextQuestion() {
-  state.q++;
-  const room = ROOMS[state.room];
-  if (state.q >= room.questions.length) {
-    state.room++;
-    state.q = 0;
-    if (state.room >= ROOMS.length) { showEnd(); return; }
+/* ── BUTTONS ── */
+document.getElementById("btn-eq").addEventListener("click", () => {
+  eqVisible = !eqVisible;
+  document.getElementById("eq-panel").style.display = eqVisible ? "block" : "none";
+  document.getElementById("btn-eq").textContent = eqVisible ? "Ocultar equação" : "Ver equação";
+});
+
+document.getElementById("btn-confirm").addEventListener("click", () => {
+  if (answered) return;
+  answered = true;
+
+  const m  = MISSIONS[current];
+  const ok = m.check(getP());
+  const pts = ok ? 200 : 80;
+  score += pts;
+
+  document.getElementById("score").textContent = score;
+
+  const fb = document.getElementById("feedback");
+  document.getElementById("fb-icon").textContent  = ok ? "✓" : "⚠";
+  document.getElementById("fb-title").textContent = ok ? `Missão concluída! +${pts} pts` : `Quase lá! +${pts} pts`;
+  document.getElementById("fb-title").style.color = ok ? "#4ade80" : "#fbbf24";
+  document.getElementById("fb-msg").textContent   = ok ? m.successMsg : m.failMsg;
+  document.getElementById("fb-btn").textContent   = current < 4 ? "Próxima missão" : "Ver resultado";
+  fb.style.display = "flex";
+  document.getElementById("btn-confirm").disabled = true;
+});
+
+document.getElementById("fb-btn").addEventListener("click", () => {
+  if (current < 4) {
+    current++;
+    updateSidebar();
+    buildControls();
+  } else {
+    cancelAnimationFrame(animId);
+    document.getElementById("main").style.display    = "none";
+    document.getElementById("topbar").style.display  = "none";
+    document.getElementById("win-screen").style.display = "flex";
+    document.getElementById("final-pts").textContent = score;
   }
-  loadQuestion();
-}
+});
 
-function showEnd() {
-  const acc = state.total > 0 ? Math.round((state.correct / state.total) * 100) : 0;
-  document.getElementById('es-pts').textContent = state.score;
-  document.getElementById('es-acc').textContent = acc + '%';
-  document.getElementById('es-lives').textContent = state.lives;
+document.getElementById("btn-restart").addEventListener("click", () => {
+  current = 0; score = 0; answered = false; eqVisible = false;
+  document.getElementById("score").textContent = 0;
+  document.getElementById("win-screen").style.display = "none";
+  document.getElementById("main").style.display   = "flex";
+  document.getElementById("topbar").style.display = "flex";
+  updateSidebar();
+  buildControls();
+  cancelAnimationFrame(animId);
+  render();
+});
 
-  let stars = '⭐', title = 'Missão concluída!', sub = 'Você escapou, mas pode melhorar. Revise os pontos errados.';
-  if (acc >= 90 && state.lives === 3) { stars = '⭐⭐⭐'; title = 'Engenheiro Mestre!'; sub = 'Perfeito! Você domina as cônicas por completo.'; }
-  else if (acc >= 70) { stars = '⭐⭐'; title = 'Missão concluída!'; sub = 'Bom trabalho! Revise os pontos que errou.'; }
+/* ── INIT ── */
+window.addEventListener("load", () => {
+  resizeCanvas();
+  updateSidebar();
+  buildControls();
+  render();
+});
 
-  document.getElementById('end-stars').textContent = stars;
-  document.getElementById('end-title').textContent = title;
-  document.getElementById('end-sub').textContent = sub;
-  showScreen('end');
-}
-
-function updateHUD() {
-  document.getElementById('hud-score').textContent = state.score;
-  const hearts = '♥'.repeat(Math.max(0, state.lives)) + '♡'.repeat(Math.max(0, 3 - state.lives));
-  document.getElementById('hud-lives').textContent = hearts;
-
-  const dots = document.getElementById('room-dots');
-  dots.innerHTML = '';
-  ROOMS.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'room-dot' + (i < state.room ? ' done' : i === state.room ? ' active' : '');
-    dots.appendChild(d);
-  });
-}
-
-function updateProgress() {
-  const total = ROOMS.reduce((s, r) => s + r.questions.length, 0);
-  const done = ROOMS.slice(0, state.room).reduce((s, r) => s + r.questions.length, 0) + state.q;
-  document.getElementById('prog-fill').style.width = Math.round((done / total) * 100) + '%';
-}
-
-resetGame();
+window.addEventListener("resize", resizeCanvas);
 </script>
 </body>
 </html>
