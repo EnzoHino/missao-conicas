@@ -261,7 +261,7 @@ body{
 #numeric-input:focus{border-color:var(--blue);}
 #numeric-input.correct{border-color:#16a34a;color:var(--green);}
 #numeric-input.wrong  {border-color:#991b1b;color:var(--red);}
-#numeric-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
+
 .eq-display{
   font-size:16px;color:#c4b5fd;text-align:center;font-family:'Georgia',serif;
   letter-spacing:.02em;background:var(--bg-deep);border:1px solid var(--border);
@@ -664,7 +664,7 @@ function buildMultiple(m){
 }
 function buildNumeric(m){
   const area=document.getElementById("answer-area");
-  area.innerHTML=`<div id="numeric-wrap"><label>Resposta:</label><input type="number" id="numeric-input" placeholder="Digite o valor" step="0.01"/><span style="font-size:12px;color:var(--text-muted)">${m.unit}</span></div><div id="numeric-hint">${m.hint}</div>`;
+  area.innerHTML=`<div id="numeric-wrap"><label>Resposta:</label><input type="number" id="numeric-input" placeholder="Digite o valor" step="0.01"/><span style="font-size:12px;color:var(--text-muted)">${m.unit}</span></div>`;
   document.getElementById("numeric-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-confirm").click();});
 }
 function buildEquation(m){
