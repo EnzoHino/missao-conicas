@@ -105,15 +105,6 @@ body{
   margin-bottom:12px;
 }
 .ranking-title{font-size:13px;font-weight:600;color:var(--text-main);}
-.ranking-toggle{
-  display:flex;gap:2px;background:var(--bg-panel);
-  border:1px solid var(--border);border-radius:6px;overflow:hidden;
-}
-.rtog{
-  padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;
-  border:none;background:transparent;color:var(--text-muted);transition:all .15s;
-}
-.rtog.active{background:var(--blue-dark);color:#fff;}
 
 .ranking-table-wrap{
   background:var(--bg-panel);border:1px solid var(--border);
@@ -178,15 +169,25 @@ body{
 }
 #sidebar h3{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-left:4px;}
 .mi{padding:8px 10px;border-radius:var(--radius);border:1px solid transparent;}
-.mi.done  {background:var(--green-bg);border-color:#16532a;}
-.mi.active{background:var(--blue-bg);border-color:var(--blue);}
-.mi.locked{background:var(--bg-bar);border-color:var(--border);}
+.mi.done-ok     {background:var(--green-bg);border-color:#16532a;}
+.mi.done-partial{background:#1c1500;border-color:#713f12;}
+.mi.active      {background:var(--blue-bg);border-color:var(--blue);}
+.mi.locked      {background:var(--bg-bar);border-color:var(--border);}
 .mi-num{font-size:10px;font-weight:600;margin-bottom:2px;}
-.mi.done   .mi-num{color:#16a34a;} .mi.active .mi-num{color:var(--blue);} .mi.locked .mi-num{color:var(--text-dim);}
+.mi.done-ok      .mi-num{color:#16a34a;}
+.mi.done-partial .mi-num{color:#ca8a04;}
+.mi.active       .mi-num{color:var(--blue);}
+.mi.locked       .mi-num{color:var(--text-dim);}
 .mi-title{font-size:11px;font-weight:500;}
-.mi.done   .mi-title{color:var(--green);} .mi.active .mi-title{color:var(--blue-text);} .mi.locked .mi-title{color:var(--text-dim);}
+.mi.done-ok      .mi-title{color:var(--green);}
+.mi.done-partial .mi-title{color:#fcd34d;}
+.mi.active       .mi-title{color:var(--blue-text);}
+.mi.locked       .mi-title{color:var(--text-dim);}
 .mi-type{font-size:10px;margin-top:1px;}
-.mi.done   .mi-type{color:#16a34a;} .mi.active .mi-type{color:var(--blue);} .mi.locked .mi-type{color:var(--text-dim);}
+.mi.done-ok      .mi-type{color:#16a34a;}
+.mi.done-partial .mi-type{color:#ca8a04;}
+.mi.active       .mi-type{color:var(--blue);}
+.mi.locked       .mi-type{color:var(--text-dim);}
 
 /* canvas area */
 #canvas-area{flex:1;display:flex;flex-direction:column;padding:14px;gap:10px;min-width:0;}
@@ -396,10 +397,6 @@ body{
     <div class="menu-ranking">
       <div class="ranking-header">
         <span class="ranking-title">🏆 Ranking</span>
-        <div class="ranking-toggle">
-          <button class="rtog active" id="rtog-valendo" onclick="loadRanking(false)">Valendo</button>
-          <button class="rtog" id="rtog-teste" onclick="loadRanking(true)">Testes</button>
-        </div>
       </div>
       <div class="ranking-table-wrap">
         <table class="rtable" id="ranking-table">
@@ -535,19 +532,14 @@ const M=[
 /* ══════════════════════════════════════════════
    RANKING API
 ══════════════════════════════════════════════ */
-let rankingShowTeste=false;
-
-async function loadRanking(showTeste){
-  rankingShowTeste=showTeste;
-  document.getElementById("rtog-valendo").classList.toggle("active",!showTeste);
-  document.getElementById("rtog-teste").classList.toggle("active",showTeste);
+async function loadRanking(){
   const tbody=document.getElementById("ranking-body");
   tbody.innerHTML=`<tr><td colspan="5" class="ranking-empty">Carregando...</td></tr>`;
   try{
-    const r=await fetch(`/api/ranking?teste=${showTeste?1:0}`);
+    const r=await fetch(`/api/ranking?teste=0`);
     const rows=await r.json();
     if(!rows.length){
-      tbody.innerHTML=`<tr><td colspan="5" class="ranking-empty">Nenhuma partida ${showTeste?"de teste ":""}registrada ainda.</td></tr>`;
+      tbody.innerHTML=`<tr><td colspan="5" class="ranking-empty">Nenhuma partida registrada ainda.</td></tr>`;
       return;
     }
     tbody.innerHTML=rows.map((row,i)=>{
@@ -608,8 +600,17 @@ function buildSidebar(){
   sb.innerHTML="<h3>missões</h3>";
   M.forEach((m,i)=>{
     const div=document.createElement("div");
-    div.className="mi "+(i<state.current?"done":i===state.current?"active":"locked");
-    div.innerHTML=`<div class="mi-num">${String(i+1).padStart(2,"0")}</div><div class="mi-title">${m.title.split(" ").slice(0,3).join(" ")}…</div><div class="mi-type">${m.conica} — ${TYPE_LABELS[m.type]}</div>`;
+    let cls;
+    if(i<state.current){
+      cls=state.scores[i]&&state.scores[i].ok?"done-ok":"done-partial";
+    } else if(i===state.current){
+      cls="active";
+    } else {
+      cls="locked";
+    }
+    div.className="mi "+cls;
+    const icon=i<state.current?(state.scores[i]&&state.scores[i].ok?"✓":"✗"):"";
+    div.innerHTML=`<div class="mi-num">${icon?icon+" ":""}${String(i+1).padStart(2,"0")}</div><div class="mi-title">${m.title.split(" ").slice(0,3).join(" ")}…</div><div class="mi-type">${m.conica} — ${TYPE_LABELS[m.type]}</div>`;
     sb.appendChild(div);
   });
 }
@@ -811,21 +812,20 @@ document.getElementById("fb-btn").addEventListener("click",()=>{
 document.getElementById("btn-ranking").addEventListener("click",()=>{
   document.getElementById("screen-win").style.display="none";
   document.getElementById("screen-menu").style.display="flex";
-  // pre-fill name
   document.getElementById("input-nome").value=state.playerName;
-  loadRanking(false);
+  loadRanking();
 });
 document.getElementById("btn-restart").addEventListener("click",()=>{
   document.getElementById("screen-win").style.display="none";
   document.getElementById("screen-menu").style.display="flex";
   document.getElementById("input-nome").value=state.playerName;
-  loadRanking(false);
+  loadRanking();
 });
 
 /* ══════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════ */
-window.addEventListener("load",()=>{loadRanking(false);});
+window.addEventListener("load",()=>{loadRanking();});
 window.addEventListener("resize",resizeCanvas);
 </script>
 </body>
