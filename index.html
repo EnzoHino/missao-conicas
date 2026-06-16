@@ -1,256 +1,269 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Engenheiro Espacial — Cônicas</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Engenheiro Espacial — Cônicas</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-deep:#060b18;--bg-dark:#0a0e1a;--bg-panel:#0f1629;--bg-bar:#111827;
+  --border:#1f2937;--border-mid:#374151;
+  --text-main:#e8eaf0;--text-muted:#6b7280;--text-dim:#374151;
+  --blue:#3b82f6;--blue-dark:#1d4ed8;--blue-hover:#2563eb;
+  --blue-bg:#1e3a5f;--blue-text:#93c5fd;
+  --green:#4ade80;--green-dark:#166534;--green-bg:#0d2818;
+  --amber:#fbbf24;--purple:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;
+  --red:#f87171;--red-bg:#3b1515;
+  --radius:8px;--radius-lg:12px;
+}
+body{
+  background:#030712;
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  color:var(--text-main);
+  padding:16px;
+}
 
-    :root {
-      --bg-deep:    #060b18;
-      --bg-dark:    #0a0e1a;
-      --bg-panel:   #0f1629;
-      --bg-bar:     #111827;
-      --border:     #1f2937;
-      --border-mid: #374151;
-      --text-main:  #e8eaf0;
-      --text-muted: #6b7280;
-      --text-dim:   #374151;
-      --blue:       #3b82f6;
-      --blue-dark:  #1d4ed8;
-      --blue-hover: #2563eb;
-      --blue-bg:    #1e3a5f;
-      --blue-text:  #93c5fd;
-      --green:      #4ade80;
-      --green-dark: #166534;
-      --green-bg:   #0d2818;
-      --amber:      #fbbf24;
-      --purple:     #a78bfa;
-      --pink:       #f472b6;
-      --cyan:       #22d3ee;
-      --radius:     8px;
-      --radius-lg:  12px;
-    }
+/* ── GAME SHELL ── */
+#game{
+  width:900px;max-width:100%;
+  background:var(--bg-dark);border-radius:var(--radius-lg);
+  overflow:hidden;border:1px solid var(--border);
+  display:flex;flex-direction:column;min-height:600px;
+}
 
-    body {
-      background: #030712;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      color: var(--text-main);
-    }
+/* ── TOP BAR ── */
+#topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 18px;background:var(--bg-bar);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.game-title{font-size:15px;font-weight:600;color:var(--blue-text);}
+.mission-badge{background:var(--blue-bg);color:var(--blue-text);font-size:11px;padding:3px 10px;border-radius:20px;}
+.pts{font-size:14px;color:var(--amber);font-weight:500;}
 
-    #game {
-      width: 860px;
-      max-width: 100vw;
-      background: var(--bg-dark);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      min-height: 560px;
-    }
+/* progress bar */
+#progress-wrap{height:3px;background:var(--border);flex-shrink:0;}
+#progress-bar{height:3px;background:var(--blue);transition:width .4s ease;width:0%;}
 
-    /* ── TOP BAR ── */
-    #topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 18px;
-      background: var(--bg-bar);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    #topbar .left { display: flex; align-items: center; gap: 10px; }
-    .game-title { font-size: 15px; font-weight: 600; color: var(--blue-text); }
-    .mission-badge {
-      background: var(--blue-bg); color: var(--blue-text);
-      font-size: 11px; padding: 3px 10px; border-radius: 20px;
-    }
-    .pts { font-size: 14px; color: var(--amber); font-weight: 500; }
+/* ── MAIN ── */
+#main{display:flex;flex:1;min-height:0;}
 
-    /* ── MAIN LAYOUT ── */
-    #main { display: flex; flex: 1; min-height: 0; }
+/* ── SIDEBAR ── */
+#sidebar{
+  width:210px;min-width:210px;background:var(--bg-panel);
+  border-right:1px solid var(--border);padding:12px 8px;
+  display:flex;flex-direction:column;gap:4px;overflow-y:auto;
+}
+#sidebar h3{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-left:4px;}
+.mi{padding:8px 10px;border-radius:var(--radius);border:1px solid transparent;}
+.mi.done  {background:var(--green-bg);border-color:#16532a;}
+.mi.active{background:var(--blue-bg);border-color:var(--blue);}
+.mi.locked{background:var(--bg-bar);border-color:var(--border);}
+.mi-num{font-size:10px;font-weight:600;margin-bottom:2px;}
+.mi.done   .mi-num{color:#16a34a;}
+.mi.active .mi-num{color:var(--blue);}
+.mi.locked .mi-num{color:var(--text-dim);}
+.mi-title{font-size:11px;font-weight:500;}
+.mi.done   .mi-title{color:var(--green);}
+.mi.active .mi-title{color:var(--blue-text);}
+.mi.locked .mi-title{color:var(--text-dim);}
+.mi-type{font-size:10px;margin-top:1px;}
+.mi.done   .mi-type{color:#16a34a;}
+.mi.active .mi-type{color:var(--blue);}
+.mi.locked .mi-type{color:var(--text-dim);}
 
-    /* ── SIDEBAR ── */
-    #sidebar {
-      width: 220px;
-      min-width: 220px;
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border);
-      padding: 14px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      overflow-y: auto;
-    }
-    #sidebar h3 {
-      font-size: 10px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: .08em;
-      margin-bottom: 6px; padding-left: 4px;
-    }
-    .mission-item {
-      padding: 9px 11px; border-radius: var(--radius);
-      border: 1px solid transparent; cursor: pointer;
-    }
-    .mission-item.done  { background: var(--green-bg); border-color: #16532a; }
-    .mission-item.active { background: var(--blue-bg); border-color: var(--blue); }
-    .mission-item.locked { background: var(--bg-bar); border-color: var(--border); cursor: default; }
-    .m-title { font-size: 12px; font-weight: 500; }
-    .mission-item.done .m-title   { color: var(--green); }
-    .mission-item.active .m-title { color: var(--blue-text); }
-    .mission-item.locked .m-title { color: var(--text-dim); }
-    .m-sub { font-size: 10px; margin-top: 2px; }
-    .mission-item.done .m-sub   { color: #16a34a; }
-    .mission-item.active .m-sub { color: var(--blue); }
-    .mission-item.locked .m-sub { color: var(--text-dim); }
+/* ── RIGHT COLUMN ── */
+#canvas-area{flex:1;display:flex;flex-direction:column;padding:14px;gap:10px;min-width:0;}
 
-    /* ── RIGHT COLUMN ── */
-    #canvas-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 14px;
-      gap: 12px;
-      min-width: 0;
-    }
+/* ── CANVAS ── */
+#sim-wrap{
+  flex:1;min-height:230px;
+  background:var(--bg-deep);border-radius:var(--radius);
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+#cv{display:block;width:100%;height:100%;}
+#sim-label{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:var(--text-muted);pointer-events:none;
+  background:rgba(6,11,24,.7);padding:2px 10px;border-radius:20px;
+  white-space:nowrap;
+}
 
-    /* ── CANVAS WRAPPER ── */
-    #sim-wrap {
-      flex: 1;
-      min-height: 240px;
-      background: var(--bg-deep);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-    #cv { display: block; width: 100%; height: 100%; }
-    #sim-label {
-      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-      font-size: 10px; color: var(--text-muted); pointer-events: none;
-      background: rgba(6,11,24,.6); padding: 2px 8px; border-radius: 20px;
-    }
+/* ── FEEDBACK OVERLAY ── */
+#feedback{
+  position:absolute;inset:0;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(6,11,24,.92);border-radius:var(--radius);
+  text-align:center;padding:24px;gap:8px;
+}
+.fb-icon{font-size:38px;}
+.fb-title{font-size:20px;font-weight:600;}
+.fb-msg{font-size:12px;color:var(--text-muted);max-width:300px;line-height:1.65;}
+.fb-math{
+  font-size:13px;color:#a5b4fc;
+  background:var(--bg-panel);border:1px solid var(--border);
+  border-radius:var(--radius);padding:8px 16px;
+  font-family:'Georgia',serif;margin-top:4px;
+}
+#fb-btn{
+  margin-top:10px;background:var(--blue-dark);border:none;color:#fff;
+  padding:8px 24px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;
+}
+#fb-btn:hover{background:var(--blue-hover);}
 
-    /* ── FEEDBACK OVERLAY ── */
-    #feedback {
-      position: absolute; inset: 0;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(6,11,24,.9);
-      border-radius: var(--radius);
-      text-align: center;
-      padding: 24px;
-      gap: 8px;
-    }
-    .fb-icon { font-size: 36px; }
-    .fb-title { font-size: 20px; font-weight: 600; }
-    .fb-msg { font-size: 12px; color: var(--text-muted); max-width: 280px; line-height: 1.6; }
-    #fb-btn {
-      margin-top: 8px;
-      background: var(--blue-dark); border: none; color: #fff;
-      padding: 8px 22px; border-radius: var(--radius);
-      font-size: 13px; font-weight: 500; cursor: pointer;
-    }
-    #fb-btn:hover { background: var(--blue-hover); }
+/* ── CONTROLS PANEL ── */
+#controls{
+  background:var(--bg-bar);border-radius:var(--radius);
+  border:1px solid var(--border);padding:14px;flex-shrink:0;
+}
+.type-badge{
+  display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;
+  border-radius:20px;margin-bottom:8px;
+}
+.type-slider   {background:#1a2f4a;color:var(--blue-text);}
+.type-multiple {background:#1a2a1a;color:#86efac;}
+.type-numeric  {background:#2d1f00;color:#fcd34d;}
+.type-equation {background:#2a1040;color:#c4b5fd;}
 
-    /* ── CONTROLS PANEL ── */
-    #controls {
-      background: var(--bg-bar);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 14px;
-      flex-shrink: 0;
-    }
-    #mission-title { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
-    #mission-desc  { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
+#mission-title{font-size:13px;font-weight:600;color:var(--text-main);margin-bottom:6px;}
+#mission-desc{
+  font-size:11.5px;color:#9ca3af;margin-bottom:12px;line-height:1.65;
+  background:rgba(255,255,255,.03);border-radius:6px;
+  padding:8px 10px;border-left:2px solid var(--border-mid);
+}
 
-    .param-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .param-label { font-size: 11px; color: #9ca3af; width: 100px; flex-shrink: 0; }
-    .param-row input[type="range"] {
-      flex: 1; height: 4px; cursor: pointer;
-      accent-color: var(--blue);
-    }
-    .param-val { font-size: 12px; color: var(--text-main); width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+/* SLIDER */
+.param-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.param-label{font-size:11px;color:#9ca3af;width:110px;flex-shrink:0;}
+.param-row input[type="range"]{flex:1;accent-color:var(--blue);cursor:pointer;}
+.param-val{font-size:12px;color:var(--text-main);width:44px;text-align:right;font-variant-numeric:tabular-nums;}
 
-    #eq-panel {
-      display: none;
-      background: var(--bg-deep);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 10px 14px;
-      font-size: 14px;
-      color: #a5b4fc;
-      text-align: center;
-      margin-top: 10px;
-      font-family: 'Georgia', serif;
-      letter-spacing: .02em;
-    }
+/* MULTIPLE CHOICE */
+#mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.mc-opt{
+  padding:9px 12px;border-radius:var(--radius);border:1px solid var(--border-mid);
+  cursor:pointer;font-size:12px;color:#9ca3af;text-align:center;
+  transition:all .18s;line-height:1.45;font-family:'Georgia',serif;
+}
+.mc-opt:hover{border-color:var(--blue);color:var(--blue-text);background:rgba(59,130,246,.08);}
+.mc-opt.selected{border-color:var(--blue);color:var(--blue-text);background:rgba(59,130,246,.15);}
+.mc-opt.correct{border-color:#16a34a;color:var(--green);background:var(--green-bg);}
+.mc-opt.wrong  {border-color:#991b1b;color:var(--red);background:var(--red-bg);}
 
-    #btn-row { display: flex; gap: 8px; margin-top: 12px; }
-    #btn-eq {
-      background: transparent; border: 1px solid var(--border-mid);
-      color: #9ca3af; padding: 7px 14px; border-radius: var(--radius);
-      font-size: 12px; cursor: pointer; transition: all .2s;
-    }
-    #btn-eq:hover { border-color: #4b5563; color: var(--text-main); }
-    #btn-confirm {
-      background: var(--blue-dark); border: none; color: #fff;
-      padding: 7px 20px; border-radius: var(--radius);
-      font-size: 12px; font-weight: 500; cursor: pointer; transition: background .2s;
-    }
-    #btn-confirm:hover:not(:disabled) { background: var(--blue-hover); }
-    #btn-confirm:disabled { background: var(--border); color: var(--text-dim); cursor: default; }
+/* NUMERIC INPUT */
+#numeric-wrap{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+#numeric-wrap label{font-size:12px;color:#9ca3af;flex-shrink:0;}
+#numeric-input{
+  flex:1;background:var(--bg-deep);border:1px solid var(--border-mid);
+  color:var(--text-main);border-radius:var(--radius);
+  padding:8px 12px;font-size:14px;outline:none;
+  font-family:'Georgia',serif;
+}
+#numeric-input:focus{border-color:var(--blue);}
+#numeric-input.correct{border-color:#16a34a;color:var(--green);}
+#numeric-input.wrong  {border-color:#991b1b;color:var(--red);}
+#numeric-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
 
-    /* ── WIN SCREEN ── */
-    #win-screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 40px;
-      text-align: center;
-      gap: 8px;
-    }
-    .win-rocket { font-size: 52px; }
-    #win-screen h2 { font-size: 24px; color: var(--amber); font-weight: 600; margin-top: 6px; }
-    #win-screen p  { font-size: 13px; color: var(--text-muted); }
-    .win-pts { font-size: 52px; font-weight: 700; color: var(--blue-text); margin: 10px 0; }
-    #btn-restart {
-      margin-top: 10px;
-      background: var(--blue-dark); border: none; color: #fff;
-      padding: 10px 28px; border-radius: var(--radius);
-      font-size: 13px; font-weight: 500; cursor: pointer;
-    }
-    #btn-restart:hover { background: var(--blue-hover); }
+/* EQUATION BUILDER */
+#eq-builder{margin-bottom:4px;}
+.eq-display{
+  font-size:16px;color:#c4b5fd;text-align:center;
+  font-family:'Georgia',serif;letter-spacing:.02em;
+  background:var(--bg-deep);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 14px;
+  margin-bottom:10px;line-height:2;
+}
+.eq-blank{
+  display:inline-block;
+  border-bottom:2px solid var(--purple);
+  min-width:40px;text-align:center;
+  padding:0 4px;color:var(--amber);
+  font-size:14px;cursor:text;
+}
+.eq-inputs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.eq-field-wrap{display:flex;flex-direction:column;gap:3px;}
+.eq-field-label{font-size:10px;color:var(--text-muted);}
+.eq-field{
+  width:72px;background:var(--bg-deep);border:1px solid var(--border-mid);
+  color:var(--amber);border-radius:var(--radius);
+  padding:6px 8px;font-size:13px;text-align:center;outline:none;
+  font-family:'Georgia',serif;
+}
+.eq-field:focus{border-color:var(--purple);}
+.eq-field.correct{border-color:#16a34a;color:var(--green);}
+.eq-field.wrong  {border-color:#991b1b;color:var(--red);}
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 680px) {
-      #main { flex-direction: column; }
-      #sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; padding: 10px; }
-      .mission-item { flex: 1 1 130px; }
-    }
-  </style>
+/* EQUATION PANEL (show eq button) */
+#eq-panel{
+  display:none;background:var(--bg-deep);border:1px solid var(--border);
+  border-radius:var(--radius);padding:9px 14px;font-size:13px;
+  color:#a5b4fc;text-align:center;margin-top:8px;
+  font-family:'Georgia',serif;letter-spacing:.02em;
+}
+
+/* BUTTONS */
+#btn-row{display:flex;gap:8px;margin-top:12px;}
+#btn-eq{
+  background:transparent;border:1px solid var(--border-mid);
+  color:#9ca3af;padding:7px 14px;border-radius:var(--radius);
+  font-size:12px;cursor:pointer;transition:all .2s;
+}
+#btn-eq:hover{border-color:#4b5563;color:var(--text-main);}
+#btn-confirm{
+  background:var(--blue-dark);border:none;color:#fff;
+  padding:7px 22px;border-radius:var(--radius);
+  font-size:12px;font-weight:500;cursor:pointer;transition:background .2s;
+}
+#btn-confirm:hover:not(:disabled){background:var(--blue-hover);}
+#btn-confirm:disabled{background:var(--border);color:var(--text-dim);cursor:default;}
+
+/* ── WIN SCREEN ── */
+#win-screen{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;padding:40px;text-align:center;gap:8px;
+}
+.win-rocket{font-size:52px;}
+#win-screen h2{font-size:24px;color:var(--amber);font-weight:600;margin-top:6px;}
+#win-screen p{font-size:13px;color:var(--text-muted);}
+.win-pts{font-size:52px;font-weight:700;color:var(--blue-text);margin:10px 0;}
+.win-stars{font-size:28px;letter-spacing:6px;margin:4px 0;}
+#btn-restart{
+  margin-top:12px;background:var(--blue-dark);border:none;color:#fff;
+  padding:10px 28px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;
+}
+#btn-restart:hover{background:var(--blue-hover);}
+.win-table{
+  width:100%;max-width:420px;margin-top:16px;
+  border-collapse:collapse;font-size:12px;
+}
+.win-table td{padding:5px 10px;border-bottom:1px solid var(--border);color:var(--text-muted);}
+.win-table td:first-child{text-align:left;}
+.win-table td:last-child{text-align:right;color:var(--amber);font-weight:500;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:660px){
+  #main{flex-direction:column;}
+  #sidebar{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);flex-direction:row;flex-wrap:wrap;padding:8px;}
+  .mi{flex:1 1 120px;}
+  #mc-grid{grid-template-columns:1fr;}
+}
+</style>
 </head>
 <body>
-
 <div id="game">
 
   <!-- TOP BAR -->
   <div id="topbar">
-    <div class="left">
+    <div style="display:flex;align-items:center;gap:10px;">
       <span class="game-title">Engenheiro Espacial</span>
-      <span class="mission-badge" id="badge">Missão 1 / 5</span>
+      <span class="mission-badge" id="badge">Missão 1 / 10</span>
     </div>
     <div class="pts">Pontos: <span id="score">0</span></div>
   </div>
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
 
   <!-- MAIN -->
   <div id="main">
@@ -258,621 +271,805 @@
     <!-- SIDEBAR -->
     <div id="sidebar">
       <h3>missões</h3>
-      <div class="mission-item active" id="mi0">
-        <div class="m-title">Órbita do satélite</div>
-        <div class="m-sub" id="ms0">Elipse — em andamento...</div>
-      </div>
-      <div class="mission-item locked" id="mi1">
-        <div class="m-title">Refletor da antena</div>
-        <div class="m-sub" id="ms1">Parábola — bloqueada</div>
-      </div>
-      <div class="mission-item locked" id="mi2">
-        <div class="m-title">Rota de fuga</div>
-        <div class="m-sub" id="ms2">Hipérbole — bloqueada</div>
-      </div>
-      <div class="mission-item locked" id="mi3">
-        <div class="m-title">Telescópio espacial</div>
-        <div class="m-sub" id="ms3">Parábola — bloqueada</div>
-      </div>
-      <div class="mission-item locked" id="mi4">
-        <div class="m-title">Órbita de transferência</div>
-        <div class="m-sub" id="ms4">Elipse — bloqueada</div>
-      </div>
+      <!-- items injected by JS -->
     </div>
 
-    <!-- CANVAS + CONTROLS -->
+    <!-- RIGHT -->
     <div id="canvas-area">
 
       <div id="sim-wrap">
         <canvas id="cv"></canvas>
-        <div id="sim-label">elipse — foco ativo</div>
-
+        <div id="sim-label">simulação</div>
         <div id="feedback">
           <div class="fb-icon" id="fb-icon">✓</div>
           <div class="fb-title" id="fb-title">Missão concluída!</div>
-          <div class="fb-msg"  id="fb-msg">Parâmetros corretos.</div>
+          <div class="fb-msg"   id="fb-msg"></div>
+          <div class="fb-math"  id="fb-math" style="display:none"></div>
           <button id="fb-btn">Próxima missão</button>
         </div>
       </div>
 
       <div id="controls">
-        <div id="mission-title">Posicione o satélite em órbita elíptica</div>
-        <div id="mission-desc">Descrição carregando...</div>
-        <div id="params"></div>
+        <span class="type-badge" id="type-badge">Slider</span>
+        <div id="mission-title">—</div>
+        <div id="mission-desc">—</div>
+        <div id="answer-area"></div>
         <div id="eq-panel"></div>
         <div id="btn-row">
-          <button id="btn-eq">Ver equação</button>
-          <button id="btn-confirm">Confirmar missão</button>
+          <button id="btn-eq" style="display:none">Ver equação</button>
+          <button id="btn-confirm">Confirmar</button>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- WIN SCREEN -->
+  <!-- WIN -->
   <div id="win-screen">
     <div class="win-rocket">🚀</div>
     <h2>Missão completa, Engenheiro!</h2>
-    <p>Você completou todas as 5 missões com sucesso.</p>
+    <p>Você concluiu todas as 10 missões.</p>
     <div class="win-pts" id="final-pts">0</div>
     <p>pontos acumulados</p>
+    <div class="win-stars" id="win-stars">★★★</div>
+    <table class="win-table" id="win-table"></table>
     <button id="btn-restart">Jogar novamente</button>
   </div>
 
 </div>
 
 <script>
-/* ─────────────────────────────────────────
-   MISSION DATA
-───────────────────────────────────────── */
-const MISSIONS = [
-  /* 0 — ELIPSE: satélite */
+/* ═══════════════════════════════════════════════
+   HELPERS — canvas drawing
+═══════════════════════════════════════════════ */
+const STARS_DATA = Array.from({length:90},(_,i)=>({
+  x:(Math.sin(i*137.508)*.5+.5),
+  y:(Math.cos(i*97.306) *.5+.5),
+  r:i%7===0?.9:i%3===0?.55:.28,
+  bright:i%11===0
+}));
+function drawStars(ctx,W,H){
+  for(const s of STARS_DATA){
+    ctx.fillStyle=s.bright?"#374151":"#1f2937";
+    ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fill();
+  }
+}
+function drawEarth(ctx,cx,cy,r){
+  ctx.fillStyle="#1a5c38";ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#4ade80";ctx.beginPath();ctx.arc(cx-r*.2,cy-r*.1,r*.55,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#2563eb";ctx.beginPath();ctx.arc(cx+r*.25,cy+r*.2,r*.4,0,Math.PI*2);ctx.fill();
+}
+function lbl(ctx,text,x,y,color,size){
+  ctx.font=`${size||10}px Inter,system-ui,sans-serif`;
+  ctx.fillStyle=color||"#6b7280";ctx.fillText(text,x,y);
+}
+function drawStar(ctx,x,y,r,color){
+  ctx.fillStyle=color||"#fde68a";
+  for(let i=0;i<6;i++){const a=i/6*Math.PI*2-Math.PI/2;ctx.beginPath();ctx.arc(x+Math.cos(a)*r,y+Math.sin(a)*r,1.2,0,Math.PI*2);ctx.fill();}
+  ctx.beginPath();ctx.arc(x,y,r*.5,0,Math.PI*2);ctx.fill();
+}
+function dashed(ctx,fn,color,lw,dash){
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=lw||1;ctx.setLineDash(dash||[4,5]);
+  fn();ctx.stroke();ctx.setLineDash([]);ctx.restore();
+}
+function solid(ctx,fn,color,lw){
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=lw||2;
+  fn();ctx.stroke();ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════
+   MISSION DEFINITIONS
+═══════════════════════════════════════════════ */
+const M = [
+
+  /* ── 0  SLIDER — elipse satélite ── */
   {
-    title: "Posicione o satélite em órbita elíptica",
-    desc:  "A órbita de um satélite segue uma elipse com a Terra em um dos focos. Ajuste os semi-eixos a e b para que o satélite alcance a órbita alvo (a ≈ 5, b ≈ 3).",
-    label: "elipse — foco ativo",
-    type:  "ellipse",
-    params: [
-      { id:"a", label:"Semi-eixo a", min:1, max:9, step:0.1, val:3, target:5 },
-      { id:"b", label:"Semi-eixo b", min:1, max:7, step:0.1, val:2, target:3 }
+    title:"Órbita do Satélite de Comunicação",
+    desc:`Um satélite geoestacionário precisa ser inserido em uma órbita elíptica de transferência ao redor da Terra. 
+A missão de controle informou que a órbita tem formato alongado horizontalmente. 
+Ajuste os semi-eixos até que a trajetória do satélite coincida com a órbita-alvo indicada.`,
+    label:"elipse — órbita de transferência",
+    conica:"Elipse",type:"slider",
+    eqFn:p=>`x² / ${p.a.toFixed(1)}²  +  y² / ${p.b.toFixed(1)}²  =  1`,
+    params:[
+      {id:"a",label:"Semi-eixo maior (a)",min:2,max:9,step:.1,val:3,target:6},
+      {id:"b",label:"Semi-eixo menor (b)",min:1,max:6,step:.1,val:2,target:3.5}
     ],
-    eqFn: p => `x² / ${p.a.toFixed(1)}²  +  y² / ${p.b.toFixed(1)}²  =  1`,
-    check: p => Math.abs(p.a - 5) < 0.45 && Math.abs(p.b - 3) < 0.45,
-    successMsg: "Órbita elíptica confirmada! O satélite está em trajetória estável ao redor da Terra.",
-    failMsg:    "Os semi-eixos ainda não batem com a órbita alvo. Tente: a ≈ 5 e b ≈ 3.",
-    draw(ctx, W, H, p) {
-      const cx = W/2, cy = H/2, sc = Math.min(W, H) * 0.085;
-      const a = p.a * sc, b = p.b * sc;
-      const ta = 5 * sc, tb = 3 * sc;
-
-      /* stars */
-      drawStars(ctx, W, H);
-
-      /* target orbit */
-      ctx.save();
-      ctx.strokeStyle = "#1f4060"; ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
-      ctx.beginPath(); ctx.ellipse(cx, cy, ta, tb, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
-
-      /* current orbit */
-      ctx.save();
-      ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.restore();
-
-      /* Earth */
-      drawEarth(ctx, cx, cy, 10);
-
-      /* animated satellite */
-      const t = Date.now() / 1400;
-      const sx = cx + a * Math.cos(t), sy = cy + b * Math.sin(t);
-      ctx.save();
-      ctx.strokeStyle = "rgba(251,191,36,.25)"; ctx.lineWidth = .8; ctx.setLineDash([2,4]);
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
-      ctx.setLineDash([]); ctx.restore();
-      ctx.fillStyle = "#fbbf24";
-      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI*2); ctx.fill();
-
-      /* focus dot */
-      const fc = Math.sqrt(Math.max(0, a*a - b*b));
-      ctx.fillStyle = "rgba(59,130,246,.4)";
-      ctx.beginPath(); ctx.arc(cx + fc, cy, 3, 0, Math.PI*2); ctx.fill();
-
-      /* labels */
-      label(ctx, "Terra", cx + 13, cy + 5, "#9ca3af");
-      label(ctx, "satélite", sx + 8, sy, "#fbbf24");
-      label(ctx, "órbita alvo", cx - ta + 4, cy - tb - 8, "#1f4060");
+    check:p=>Math.abs(p.a-6)<.5&&Math.abs(p.b-3.5)<.5,
+    pts:150,
+    successMsg:"Órbita elíptica confirmada! O satélite está em trajetória estável.",
+    failMsg:"Os semi-eixos ainda não atingem a órbita-alvo. Observe a curva tracejada e tente novamente.",
+    solutionEq:"x² / 6²  +  y² / 3.5²  =  1",
+    draw(ctx,W,H,p){
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.075;
+      const a=p.a*sc,b=p.b*sc,ta=6*sc,tb=3.5*sc;
+      drawStars(ctx,W,H);
+      dashed(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,ta,tb,0,0,Math.PI*2);},"#1f4060",1.5);
+      solid(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,a,b,0,0,Math.PI*2);},"#3b82f6",2);
+      drawEarth(ctx,cx,cy,11);
+      const t=Date.now()/1500,sx=cx+a*Math.cos(t),sy=cy+b*Math.sin(t);
+      ctx.save();ctx.strokeStyle="rgba(251,191,36,.2)";ctx.lineWidth=.7;ctx.setLineDash([2,4]);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(sx,sy);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      ctx.fillStyle="#fbbf24";ctx.beginPath();ctx.arc(sx,sy,5,0,Math.PI*2);ctx.fill();
+      lbl(ctx,"Terra",cx+13,cy+5,"#9ca3af");lbl(ctx,"satélite",sx+7,sy,"#fbbf24");
+      lbl(ctx,"órbita-alvo",cx-ta+2,cy-tb-8,"#1f4060");
     }
   },
 
-  /* 1 — PARÁBOLA: refletor */
+  /* ── 1  MÚLTIPLA ESCOLHA — identificar equação da elipse ── */
   {
-    title: "Calibre o refletor parabólico da antena",
-    desc:  "Um refletor parabólico concentra sinais de rádio em seu foco. Ajuste o parâmetro p até o foco coincidir com o receptor (p ≈ 2).",
-    label: "parábola — foco ativo",
-    type:  "parabola",
-    params: [
-      { id:"p", label:"Parâmetro p", min:0.5, max:5, step:0.1, val:1, target:2 }
+    title:"Qual Equação Representa Esta Órbita?",
+    desc:`O radar de rastreamento captou a trajetória de um satélite ao redor de Marte. 
+O gráfico ao lado mostra a curva detectada. 
+Analise a forma da órbita e identifique qual das equações abaixo a representa corretamente.`,
+    label:"elipse — identifique a equação",
+    conica:"Elipse",type:"multiple",
+    correctIndex:2,
+    options:[
+      "x² / 9  +  y² / 16  =  1",
+      "x² / 16  −  y² / 9  =  1",
+      "x² / 16  +  y² / 9  =  1",
+      "y²  =  8x"
     ],
-    eqFn: p => `x²  =  ${(4 * p.p).toFixed(1)} · y`,
-    check: p => Math.abs(p.p - 2) < 0.4,
-    successMsg: "Foco alinhado! O refletor está concentrando o sinal corretamente no receptor.",
-    failMsg:    "O foco não coincide com o receptor. Ajuste p para ≈ 2.",
-    draw(ctx, W, H, p) {
-      const cx = W/2, cy = H * 0.78, sc = Math.min(W, H) * 0.1;
-      const pv = p.p * sc, tp = 2 * sc;
-      const xRange = 3.2;
-
-      drawStars(ctx, W, H);
-
-      /* target parabola */
-      ctx.save();
-      ctx.strokeStyle = "#2e1a5e"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
-      ctx.beginPath();
-      for (let x = -xRange; x <= xRange; x += 0.02) {
-        const px = cx + x * sc, py = cy - (x*x*sc) / (4*2);
-        x === -xRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-
-      /* current parabola */
-      ctx.save();
-      ctx.strokeStyle = "#a78bfa"; ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let x = -xRange; x <= xRange; x += 0.015) {
-        const px = cx + x * sc, py = cy - (x*x*sc) / (4 * p.p);
-        x === -xRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.stroke(); ctx.restore();
-
-      /* horizontal guide lines (incoming signal rays) */
-      ctx.save();
-      ctx.strokeStyle = "rgba(167,139,250,.18)"; ctx.lineWidth = .8; ctx.setLineDash([2,4]);
-      for (let x = -xRange; x <= xRange; x += .7) {
-        const px = cx + x * sc, pyOnPar = cy - (x*x*sc) / (4 * p.p);
-        ctx.beginPath(); ctx.moveTo(W * .02, pyOnPar); ctx.lineTo(px, pyOnPar); ctx.stroke();
-      }
-      ctx.setLineDash([]); ctx.restore();
-
-      /* target receiver */
-      const tfy = cy - tp;
-      ctx.strokeStyle = "rgba(30,100,60,.5)"; ctx.lineWidth = .8; ctx.setLineDash([3,4]);
-      ctx.beginPath(); ctx.moveTo(cx - W*.4, tfy); ctx.lineTo(cx + W*.4, tfy); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = "#10b981";
-      ctx.beginPath(); ctx.arc(cx, tfy, 6, 0, Math.PI*2); ctx.fill();
-
-      /* current focus */
-      const fy = cy - pv;
-      ctx.fillStyle = "#fbbf24";
-      ctx.beginPath(); ctx.arc(cx, fy, 6, 0, Math.PI*2); ctx.fill();
-
-      /* base */
-      ctx.fillStyle = "#1f2937";
-      ctx.fillRect(cx - 18, cy, 36, 8);
-
-      label(ctx, "foco atual",      cx + 9, fy + 3,  "#fbbf24");
-      label(ctx, "receptor (alvo)", cx + 9, tfy + 14, "#10b981");
-      label(ctx, "antena",          cx - 16, cy + 20, "#6b7280");
+    pts:120,
+    successMsg:"Correto! A elipse tem semi-eixo maior a=4 (eixo x) e semi-eixo menor b=3 (eixo y).",
+    failMsg:"Atenção: a elipse é mais larga no eixo x (a=4 > b=3). Na equação da elipse os denominadores são os quadrados dos semi-eixos.",
+    solutionEq:"x² / 4²  +  y² / 3²  =  1  →  a=4, b=3",
+    draw(ctx,W,H){
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.085;
+      const a=4*sc,b=3*sc;
+      drawStars(ctx,W,H);
+      drawEarth(ctx,cx+Math.sqrt(a*a-b*b)*.0,cy,8);// foco aproximado visual
+      // planet (Marte)
+      ctx.fillStyle="#c2410c";ctx.beginPath();ctx.arc(cx,cy,11,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#ea580c";ctx.beginPath();ctx.arc(cx,cy,9,0,Math.PI*2);ctx.fill();
+      solid(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,a,b,0,0,Math.PI*2);},"#3b82f6",2);
+      // axis hints
+      ctx.save();ctx.strokeStyle="#1f2937";ctx.lineWidth=.6;ctx.setLineDash([3,4]);
+      ctx.beginPath();ctx.moveTo(cx-a-12,cy);ctx.lineTo(cx+a+12,cy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,cy-b-12);ctx.lineTo(cx,cy+b+12);ctx.stroke();
+      ctx.setLineDash([]);ctx.restore();
+      // dimension labels
+      ctx.save();ctx.strokeStyle="#374151";ctx.lineWidth=.8;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+a,cy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy-b);ctx.stroke();ctx.restore();
+      lbl(ctx,"a = 4",cx+a*.4,cy-8,"#60a5fa",11);
+      lbl(ctx,"b = 3",cx+6,cy-b*.55,"#60a5fa",11);
+      lbl(ctx,"Marte",cx+13,cy+4,"#fb923c");
+      const t=Date.now()/1800,sx=cx+a*Math.cos(t),sy=cy+b*Math.sin(t);
+      ctx.fillStyle="#fbbf24";ctx.beginPath();ctx.arc(sx,sy,4,0,Math.PI*2);ctx.fill();
     }
   },
 
-  /* 2 — HIPÉRBOLE: rota de fuga */
+  /* ── 2  SLIDER — parábola refletor ── */
   {
-    title: "Calcule a rota de fuga hiperbólica",
-    desc:  "Uma nave em velocidade de escape segue uma hipérbole com o planeta no foco. Ajuste os parâmetros para a trajetória correta (a ≈ 3, b ≈ 2).",
-    label: "hipérbole — rota de fuga",
-    type:  "hyperbola",
-    params: [
-      { id:"a", label:"Semi-eixo a", min:1, max:6, step:0.1, val:2, target:3 },
-      { id:"b", label:"Semi-eixo b", min:1, max:5, step:0.1, val:1.5, target:2 }
+    title:"Calibração do Refletor Parabólico",
+    desc:`A estação espacial usa uma antena com espelho parabólico para captar sinais de sondas distantes. 
+O receptor de sinais precisa estar exatamente no foco da parábola. 
+Ajuste o parâmetro da curva até que o foco (ponto amarelo) coincida com o receptor (ponto verde).`,
+    label:"parábola — calibração do foco",
+    conica:"Parábola",type:"slider",
+    eqFn:p=>`x²  =  ${(4*p.p).toFixed(1)} · y`,
+    params:[
+      {id:"p",label:"Parâmetro focal (p)",min:.5,max:5,step:.1,val:1,target:2.5}
     ],
-    eqFn: p => `x² / ${p.a.toFixed(1)}²  −  y² / ${p.b.toFixed(1)}²  =  1`,
-    check: p => Math.abs(p.a - 3) < 0.45 && Math.abs(p.b - 2) < 0.45,
-    successMsg: "Trajetória hiperbólica confirmada! A nave vai escapar do campo gravitacional.",
-    failMsg:    "Rota incorreta. Ajuste a ≈ 3 e b ≈ 2.",
-    draw(ctx, W, H, p) {
-      const cx = W/2, cy = H/2, sc = Math.min(W, H) * 0.085;
-      const a = p.a * sc, b = p.b * sc;
-      const ta = 3 * sc, tb = 2 * sc;
-
-      drawStars(ctx, W, H);
-
-      /* asymptotes (target) */
-      ctx.save();
-      ctx.strokeStyle = "#1a2a1a"; ctx.lineWidth = .8; ctx.setLineDash([3,5]);
-      const slope = tb / ta;
-      ctx.beginPath();
-      ctx.moveTo(cx - W/2, cy - slope * W/2); ctx.lineTo(cx + W/2, cy + slope * W/2);
-      ctx.moveTo(cx - W/2, cy + slope * W/2); ctx.lineTo(cx + W/2, cy - slope * W/2);
-      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-
-      /* target hyperbola */
-      ctx.save();
-      ctx.strokeStyle = "#2a0f20"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
-      for (const sgn of [1, -1]) {
-        ctx.beginPath();
-        for (let t = -1.6; t <= 1.6; t += 0.02) {
-          const x = cx + sgn * ta * Math.cosh(t), y = cy + tb * Math.sinh(t);
-          t === -1.6 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }
-      ctx.setLineDash([]); ctx.restore();
-
-      /* current hyperbola */
-      ctx.save();
-      ctx.strokeStyle = "#f472b6"; ctx.lineWidth = 2;
-      for (const sgn of [1, -1]) {
-        ctx.beginPath();
-        for (let t = -1.6; t <= 1.6; t += 0.015) {
-          const x = cx + sgn * a * Math.cosh(t), y = cy + b * Math.sinh(t);
-          t === -1.6 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      /* planet (focus) */
-      const c = Math.sqrt(a*a + b*b);
-      ctx.fillStyle = "#1d4ed8";
-      ctx.beginPath(); ctx.arc(cx + c, cy, 9, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = "#3b82f6";
-      ctx.beginPath(); ctx.arc(cx + c, cy, 7, 0, Math.PI*2); ctx.fill();
-
-      /* animated ship on left branch */
-      const t0 = (Date.now() / 1400) % 2.4 - 1.2;
-      const nx = cx - a * Math.cosh(t0), ny = cy + b * Math.sinh(t0);
-      ctx.fillStyle = "#f59e0b";
-      ctx.beginPath(); ctx.arc(nx, ny, 5, 0, Math.PI*2); ctx.fill();
-
-      label(ctx, "planeta", cx + c + 11, cy + 4, "#60a5fa");
-      label(ctx, "nave",    nx + 8,      ny,      "#fbbf24");
-      label(ctx, "rota alvo", cx - ta - 60, cy - tb - 6, "#2a0f20");
+    check:p=>Math.abs(p.p-2.5)<.4,
+    pts:150,
+    successMsg:"Foco alinhado perfeitamente! A antena está recebendo o sinal com máxima intensidade.",
+    failMsg:"O foco não coincide com o receptor. Observe a distância entre os pontos e ajuste p.",
+    solutionEq:"x²  =  10y  →  p = 2.5",
+    draw(ctx,W,H,p){
+      const cx=W/2,cy=H*.8,sc=Math.min(W,H)*.1;
+      const pv=p.p*sc,tp=2.5*sc,xR=3;
+      drawStars(ctx,W,H);
+      dashed(ctx,()=>{ctx.beginPath();for(let x=-xR;x<=xR;x+=.04){const px=cx+x*sc,py=cy-(x*x*sc)/(4*2.5);x===-xR?ctx.moveTo(px,py):ctx.lineTo(px,py);}},"#1f3a60",1.5);
+      solid(ctx,()=>{ctx.beginPath();for(let x=-xR;x<=xR;x+=.015){const px=cx+x*sc,py=cy-(x*x*sc)/(4*p.p);x===-xR?ctx.moveTo(px,py):ctx.lineTo(px,py);};},"#a78bfa",2);
+      // rays
+      ctx.save();ctx.strokeStyle="rgba(167,139,250,.15)";ctx.lineWidth=.8;ctx.setLineDash([2,5]);
+      for(let x=-xR;x<=xR;x+=.65){const px=cx+x*sc,py=cy-(x*x*sc)/(4*p.p);ctx.beginPath();ctx.moveTo(W*.01,py);ctx.lineTo(px,py);ctx.stroke();}
+      ctx.setLineDash([]);ctx.restore();
+      // receiver target
+      const tfy=cy-tp;
+      ctx.save();ctx.strokeStyle="rgba(16,185,129,.35)";ctx.lineWidth=.7;ctx.setLineDash([3,4]);
+      ctx.beginPath();ctx.moveTo(cx-W*.4,tfy);ctx.lineTo(cx+W*.4,tfy);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      ctx.fillStyle="#10b981";ctx.beginPath();ctx.arc(cx,tfy,7,0,Math.PI*2);ctx.fill();
+      // current focus
+      ctx.fillStyle="#fbbf24";ctx.beginPath();ctx.arc(cx,cy-pv,6,0,Math.PI*2);ctx.fill();
+      // base
+      ctx.fillStyle="#1f2937";ctx.fillRect(cx-20,cy,40,9);
+      lbl(ctx,"foco atual",cx+9,cy-pv+3,"#fbbf24");
+      lbl(ctx,"receptor (alvo)",cx+9,tfy+14,"#10b981");
+      lbl(ctx,"antena",cx-14,cy+20,"#6b7280");
     }
   },
 
-  /* 3 — PARÁBOLA: telescópio */
+  /* ── 3  MÚLTIPLA ESCOLHA — identificar cônica pelo gráfico ── */
   {
-    title: "Aponte o telescópio para a estrela",
-    desc:  "O espelho primário de um telescópio é parabólico. O foco deve coincidir com o detector. Ajuste p para que o sinal converja ao detector (p ≈ 3).",
-    label: "parábola — espelho primário",
-    type:  "parabola",
-    params: [
-      { id:"p", label:"Parâmetro p", min:0.5, max:6, step:0.1, val:1.5, target:3 }
+    title:"Identifique a Cônica da Trajetória",
+    desc:`Sensores detectaram a trajetória de um objeto não identificado que passou pelo sistema solar. 
+O gráfico mostra a curva registrada pelos telescópios. 
+Com base na forma da curva, qual é o tipo de cônica que descreve essa trajetória?`,
+    label:"hipérbole — trajetória detectada",
+    conica:"Hipérbole",type:"multiple",
+    correctIndex:1,
+    options:[
+      "Elipse — o objeto está em órbita fechada",
+      "Hipérbole — o objeto veio do espaço interestelar",
+      "Parábola — o objeto está em velocidade de escape exata",
+      "Circunferência — órbita circular perfeita"
     ],
-    eqFn: p => `y²  =  ${(4 * p.p).toFixed(1)} · x`,
-    check: p => Math.abs(p.p - 3) < 0.4,
-    successMsg: "Telescópio calibrado! A estrela está em foco perfeito no detector.",
-    failMsg:    "O foco está desalinhado. Ajuste p ≈ 3.",
-    draw(ctx, W, H, p) {
-      const cx = W * 0.22, cy = H/2, sc = Math.min(W, H) * 0.095;
-      const pv = p.p * sc, tp = 3 * sc;
-      const yRange = 2.8;
-
-      drawStars(ctx, W, H);
-
-      /* target parabola */
-      ctx.save();
-      ctx.strokeStyle = "#2e1a5e"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
-      ctx.beginPath();
-      for (let y = -yRange; y <= yRange; y += 0.03) {
-        const py = cy + y * sc, px = cx + (y*y*sc) / (4*3);
-        y === -yRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-
-      /* current parabola */
-      ctx.save();
-      ctx.strokeStyle = "#a78bfa"; ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let y = -yRange; y <= yRange; y += 0.015) {
-        const py = cy + y * sc, px = cx + (y*y*sc) / (4 * p.p);
-        y === -yRange ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.stroke(); ctx.restore();
-
-      /* incoming rays */
-      ctx.save();
-      ctx.strokeStyle = "rgba(253,230,138,.15)"; ctx.lineWidth = .8; ctx.setLineDash([2,4]);
-      for (let y = -yRange; y <= yRange; y += .6) {
-        const py = cy + y * sc, pxOnPar = cx + (y*y*sc) / (4 * p.p);
-        ctx.beginPath(); ctx.moveTo(W * .96, py); ctx.lineTo(pxOnPar, py); ctx.stroke();
-      }
-      ctx.setLineDash([]); ctx.restore();
-
-      /* target detector */
-      const tfx = cx + tp;
-      ctx.strokeStyle = "rgba(16,185,129,.4)"; ctx.lineWidth = .8; ctx.setLineDash([3,4]);
-      ctx.beginPath(); ctx.moveTo(tfx, cy - H*.45); ctx.lineTo(tfx, cy + H*.45); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = "#10b981";
-      ctx.beginPath(); ctx.arc(tfx, cy, 6, 0, Math.PI*2); ctx.fill();
-
-      /* current focus */
-      const fx = cx + pv;
-      ctx.fillStyle = "#fbbf24";
-      ctx.beginPath(); ctx.arc(fx, cy, 6, 0, Math.PI*2); ctx.fill();
-
-      /* star (source) */
-      const sx = W * 0.92, sy = H * 0.25;
-      drawStar6(ctx, sx, sy, 6, "#fde68a");
-
-      label(ctx, "foco atual", fx + 8, cy - 8, "#fbbf24");
-      label(ctx, "detector",   tfx + 8, cy + 14, "#10b981");
-      label(ctx, "estrela",    sx + 8, sy + 4, "#fde68a");
+    pts:100,
+    successMsg:"Correto! A curva aberta com dois ramos é uma hipérbole. O objeto tem velocidade superior à de escape — veio de fora do sistema solar.",
+    failMsg:"Observe bem: a curva tem dois ramos simétricos e é aberta. Isso caracteriza uma hipérbole, não uma elipse ou parábola.",
+    solutionEq:"x² / a²  −  y² / b²  =  1  (hipérbole)",
+    draw(ctx,W,H){
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.082;
+      const a=3*sc,b=2*sc;
+      drawStars(ctx,W,H);
+      // sun
+      ctx.fillStyle="#78350f";ctx.beginPath();ctx.arc(cx,cy,13,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(cx,cy,11,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fde68a";ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();
+      // asymptotes
+      dashed(ctx,()=>{const sl=b/a;ctx.beginPath();ctx.moveTo(cx-W/2,cy-sl*W/2);ctx.lineTo(cx+W/2,cy+sl*W/2);ctx.moveTo(cx-W/2,cy+sl*W/2);ctx.lineTo(cx+W/2,cy-sl*W/2);},"#1a2a1a",1);
+      // hyperbola
+      solid(ctx,()=>{for(const sg of[1,-1]){ctx.beginPath();for(let t=-1.5;t<=1.5;t+=.015){const x=cx+sg*a*Math.cosh(t),y=cy+b*Math.sinh(t);t===-1.5?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}},"#f472b6",2);
+      // animated object on left branch
+      const t=(Date.now()/1300)%2.4-1.2;
+      const ox=cx-a*Math.cosh(t),oy=cy+b*Math.sinh(t);
+      ctx.fillStyle="#e2e8f0";ctx.beginPath();ctx.arc(ox,oy,5,0,Math.PI*2);ctx.fill();
+      lbl(ctx,"Sol",cx+14,cy+4,"#fbbf24");lbl(ctx,"objeto",ox+7,oy,"#e2e8f0");
     }
   },
 
-  /* 4 — ELIPSE: transferência de Hohmann */
+  /* ── 4  NUMÉRICO — calcular foco da parábola ── */
   {
-    title: "Órbita de transferência de Hohmann",
-    desc:  "A manobra de Hohmann usa uma elipse que tangencia duas órbitas circulares. Ajuste a e b para conectar a órbita baixa (r=2.5) com a órbita alta (r=6).",
-    label: "elipse — transferência orbital",
-    type:  "ellipse",
-    params: [
-      { id:"a", label:"Semi-eixo a", min:2, max:10, step:0.1, val:4, target:6 },
-      { id:"b", label:"Semi-eixo b", min:1, max:8,  step:0.1, val:2.5, target:4 }
+    title:"Calcule a Posição do Foco",
+    desc:`Um engenheiro precisa instalar o receptor de uma antena parabólica.
+A equação do espelho é  y² = 12x,  com vértice na origem e eixo ao longo do eixo x.
+Sabendo que a equação geral da parábola é  y² = 4px,  calcule o valor de  p  
+(distância do vértice até o foco) e digite o resultado abaixo.`,
+    label:"parábola  y² = 12x",
+    conica:"Parábola",type:"numeric",
+    answer:3,tolerance:.15,
+    unit:"unidades",
+    hint:"Dica: compare y² = 12x com y² = 4px → 4p = 12 → p = ?",
+    pts:200,
+    successMsg:"Exato! 4p = 12, portanto p = 3. O receptor deve ser instalado a 3 unidades do vértice.",
+    failMsg:"Revise: na equação y² = 4px, o coeficiente de x é 4p. Com y² = 12x temos 4p = 12.",
+    solutionEq:"y² = 4px  →  4p = 12  →  p = 3",
+    draw(ctx,W,H){
+      const cx=W*.2,cy=H/2,sc=Math.min(W,H)*.095,pv=3*sc,xR=2.8;
+      drawStars(ctx,W,H);
+      solid(ctx,()=>{ctx.beginPath();for(let y=-xR;y<=xR;y+=.015){const py=cy+y*sc,px=cx+(y*y*sc)/(4*3);y===-xR?ctx.moveTo(px,py):ctx.lineTo(px,py);};},"#a78bfa",2);
+      // rays from right
+      ctx.save();ctx.strokeStyle="rgba(253,230,138,.13)";ctx.lineWidth=.8;ctx.setLineDash([2,5]);
+      for(let y=-xR;y<=xR;y+=.65){const py=cy+y*sc,px=cx+(y*y*sc)/(4*3);ctx.beginPath();ctx.moveTo(W*.97,py);ctx.lineTo(px,py);ctx.stroke();}
+      ctx.setLineDash([]);ctx.restore();
+      // focus
+      ctx.fillStyle="#fbbf24";ctx.beginPath();ctx.arc(cx+pv,cy,7,0,Math.PI*2);ctx.fill();
+      // vertex
+      ctx.fillStyle="#60a5fa";ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fill();
+      // dimension arrow
+      ctx.save();ctx.strokeStyle="#374151";ctx.lineWidth=.8;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(cx,cy+40);ctx.lineTo(cx+pv,cy+40);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      lbl(ctx,"p = ?",cx+pv*.35,cy+54,"#fbbf24",11);
+      lbl(ctx,"foco",cx+pv+8,cy+3,"#fbbf24");
+      lbl(ctx,"vértice",cx+8,cy-10,"#60a5fa");
+      lbl(ctx,"y² = 12x",cx+W*.3,cy-H*.3,"#9ca3af",12);
+      // star (signal source)
+      drawStar(ctx,W*.9,H*.2,7,"#fde68a");
+      lbl(ctx,"fonte",W*.9+10,H*.2+4,"#fde68a");
+    }
+  },
+
+  /* ── 5  MONTE A EQUAÇÃO — elipse ── */
+  {
+    title:"Monte a Equação da Órbita Elíptica",
+    desc:`A sonda Voyager 3 foi lançada em uma órbita elíptica ao redor do Sol, com:
+• Semi-eixo maior  a = 5  (eixo x)
+• Semi-eixo menor  b = 3  (eixo y)
+• Centro na origem
+
+Complete a equação da elipse preenchendo os denominadores corretamente. 
+O gráfico se atualiza em tempo real conforme você digita.`,
+    label:"elipse — monte a equação",
+    conica:"Elipse",type:"equation",
+    template:"x² / [A]  +  y² / [B]  =  1",
+    fields:[
+      {id:"A",label:"denominador em x² (a²)",target:25,placeholder:"a²"},
+      {id:"B",label:"denominador em y² (b²)",target:9, placeholder:"b²"}
     ],
-    eqFn: p => `x² / ${p.a.toFixed(1)}²  +  y² / ${p.b.toFixed(1)}²  =  1`,
-    check: p => Math.abs(p.a - 6) < 0.45 && Math.abs(p.b - 4) < 0.45,
-    successMsg: "Transferência orbital confirmada! A nave chegará à órbita alta com manobra de mínimo combustível.",
-    failMsg:    "A elipse não conecta as duas órbitas. Tente a ≈ 6 e b ≈ 4.",
-    draw(ctx, W, H, p) {
-      const cx = W/2, cy = H/2, sc = Math.min(W, H) * 0.072;
-      const a = p.a * sc, b = p.b * sc;
-      const r1 = 2.5 * sc, r2 = 6 * sc;
-      const ta = 6 * sc, tb = 4 * sc;
+    check:f=>Math.abs(f.A-25)<1&&Math.abs(f.B-9)<1,
+    pts:220,
+    successMsg:"Perfeito! a²=25 e b²=9 definem a elipse com semi-eixos a=5 e b=3.",
+    failMsg:"Os denominadores devem ser os quadrados dos semi-eixos: a²=5²=25 e b²=3²=9.",
+    solutionEq:"x² / 25  +  y² / 9  =  1",
+    eqDisplay:"x² / [A]  +  y² / [B]  =  1",
+    draw(ctx,W,H,fv){
+      const A=parseFloat(fv&&fv.A)||1,B=parseFloat(fv&&fv.B)||1;
+      const a=Math.sqrt(Math.abs(A)),b=Math.sqrt(Math.abs(B));
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.082;
+      const ra=a*sc,rb=b*sc,ta=5*sc,tb=3*sc;
+      drawStars(ctx,W,H);
+      // sun
+      ctx.fillStyle="#78350f";ctx.beginPath();ctx.arc(cx,cy,12,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fde68a";ctx.beginPath();ctx.arc(cx,cy,9,0,Math.PI*2);ctx.fill();
+      dashed(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,ta,tb,0,0,Math.PI*2);},"#1f4060",1.5);
+      if(a>.1&&b>.1){
+        solid(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,ra,rb,0,0,Math.PI*2);},"#3b82f6",2);
+        const t=Date.now()/1600,sx=cx+ra*Math.cos(t),sy=cy+rb*Math.sin(t);
+        ctx.fillStyle="#22d3ee";ctx.beginPath();ctx.arc(sx,sy,4,0,Math.PI*2);ctx.fill();
+      }
+      lbl(ctx,"Sol",cx+13,cy+4,"#fbbf24");
+      lbl(ctx,"órbita-alvo",cx-ta+4,cy-tb-8,"#1f4060");
+    }
+  },
 
-      drawStars(ctx, W, H);
+  /* ── 6  SLIDER — hipérbole rota de fuga ── */
+  {
+    title:"Rota de Fuga Hiperbólica",
+    desc:`Uma nave espacial foi lançada com velocidade superior à de escape do planeta Kepler-22b. 
+A trajetória resultante é uma hipérbole com o planeta num dos focos. 
+Ajuste os parâmetros a e b até a rota calculada coincidir com a trajetória monitorada.`,
+    label:"hipérbole — rota de fuga",
+    conica:"Hipérbole",type:"slider",
+    eqFn:p=>`x² / ${p.a.toFixed(1)}²  −  y² / ${p.b.toFixed(1)}²  =  1`,
+    params:[
+      {id:"a",label:"Semi-eixo real (a)",min:1,max:6,step:.1,val:2,target:3.5},
+      {id:"b",label:"Semi-eixo imaginário (b)",min:1,max:5,step:.1,val:1.5,target:2.5}
+    ],
+    check:p=>Math.abs(p.a-3.5)<.5&&Math.abs(p.b-2.5)<.5,
+    pts:180,
+    successMsg:"Rota confirmada! A nave escapará do campo gravitacional de Kepler-22b.",
+    failMsg:"A trajetória não coincide com a monitorada. Ajuste a e b até as curvas se sobreporem.",
+    solutionEq:"x² / 3.5²  −  y² / 2.5²  =  1",
+    draw(ctx,W,H,p){
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.082;
+      const a=p.a*sc,b=p.b*sc,ta=3.5*sc,tb=2.5*sc;
+      drawStars(ctx,W,H);
+      // asymptotes target
+      dashed(ctx,()=>{const sl=tb/ta;ctx.beginPath();ctx.moveTo(cx-W/2,cy-sl*W/2);ctx.lineTo(cx+W/2,cy+sl*W/2);ctx.moveTo(cx-W/2,cy+sl*W/2);ctx.lineTo(cx+W/2,cy-sl*W/2);},"#1a2a1a",.8);
+      // target hyperbola
+      dashed(ctx,()=>{for(const sg of[1,-1]){ctx.beginPath();for(let t=-1.6;t<=1.6;t+=.04){const x=cx+sg*ta*Math.cosh(t),y=cy+tb*Math.sinh(t);t===-1.6?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}},"#2a0f20",1.5);
+      // current hyperbola
+      solid(ctx,()=>{for(const sg of[1,-1]){ctx.beginPath();for(let t=-1.6;t<=1.6;t+=.015){const x=cx+sg*a*Math.cosh(t),y=cy+b*Math.sinh(t);t===-1.6?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}},"#f472b6",2);
+      // planet
+      const c=Math.sqrt(a*a+b*b);
+      ctx.fillStyle="#1d4ed8";ctx.beginPath();ctx.arc(cx+c,cy,10,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#3b82f6";ctx.beginPath();ctx.arc(cx+c,cy,7,0,Math.PI*2);ctx.fill();
+      // animated ship
+      const t0=(Date.now()/1400)%2.6-1.3;
+      const nx=cx-a*Math.cosh(t0),ny=cy+b*Math.sinh(t0);
+      ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(nx,ny,5,0,Math.PI*2);ctx.fill();
+      lbl(ctx,"Kepler-22b",cx+c+12,cy+4,"#60a5fa");lbl(ctx,"nave",nx+7,ny,"#fbbf24");
+      lbl(ctx,"trajetória-alvo",cx-ta-78,cy-tb-6,"#2a0f20");
+    }
+  },
 
-      /* orbits */
-      ctx.save();
-      ctx.strokeStyle = "#22d3ee"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(cx, cy, r1, 0, Math.PI*2); ctx.stroke();
-      ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(cx, cy, r2, 0, Math.PI*2); ctx.stroke();
-      ctx.restore();
+  /* ── 7  NUMÉRICO — calcular excentricidade ── */
+  {
+    title:"Calcule a Excentricidade da Órbita",
+    desc:`O telescópio espacial James Webb identificou uma elipse de satélite com:
+• Semi-eixo maior  a = 5
+• Semi-eixo menor  b = 4
 
-      /* target transfer ellipse */
-      ctx.save();
-      ctx.strokeStyle = "#1f3a1f"; ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
-      ctx.beginPath(); ctx.ellipse(cx, cy, ta, tb, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.setLineDash([]); ctx.restore();
+A excentricidade mede o quanto a elipse se afasta de um círculo e é dada por:
+       c = √(a² − b²)       e = c / a
 
-      /* current transfer ellipse */
-      ctx.save();
-      ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.restore();
+Calcule o valor de  e  e digite abaixo (arredonde para 2 casas decimais).`,
+    label:"elipse  a=5, b=4",
+    conica:"Elipse",type:"numeric",
+    answer:0.6,tolerance:.05,
+    unit:"",
+    hint:"Dica: c = √(25 − 16) = √9 = 3  →  e = c/a = 3/5 = ?",
+    pts:220,
+    successMsg:"Excelente! c=√(25−16)=3 e a excentricidade e=c/a=3/5=0.6. Órbita levemente alongada.",
+    failMsg:"Lembre: c=√(a²−b²)=√(25−16)=3, e depois e=c/a=3/5.",
+    solutionEq:"c = √(5²−4²) = √9 = 3  →  e = 3/5 = 0.60",
+    draw(ctx,W,H){
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.082;
+      const a=5*sc,b=4*sc,c=3*sc;
+      drawStars(ctx,W,H);
+      solid(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,a,b,0,0,Math.PI*2);},"#3b82f6",2);
+      drawEarth(ctx,cx+c,cy,9);
+      // dimension lines
+      ctx.save();ctx.strokeStyle="#374151";ctx.lineWidth=.8;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+a,cy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy-b);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+c,cy-8);ctx.stroke();
+      ctx.setLineDash([]);ctx.restore();
+      // foci
+      ctx.fillStyle="#60a5fa";ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(cx-c,cy,4,0,Math.PI*2);ctx.fill();
+      lbl(ctx,"a = 5",cx+a*.4,cy-10,"#60a5fa",11);
+      lbl(ctx,"b = 4",cx+8,cy-b*.55,"#60a5fa",11);
+      lbl(ctx,"c = ?",cx+c*.3,cy+18,"#fbbf24",11);
+      lbl(ctx,"Terra",cx+c+12,cy+4,"#9ca3af");
+      lbl(ctx,"e = c/a = ?",cx-W*.3,cy-H*.35,"#9ca3af",12);
+    }
+  },
 
-      /* Earth */
-      drawEarth(ctx, cx, cy, 9);
+  /* ── 8  MONTE A EQUAÇÃO — hipérbole ── */
+  {
+    title:"Monte a Equação da Rota Hiperbólica",
+    desc:`Uma sonda interestelar passa pelo Sol em trajetória hiperbólica com:
+• Semi-eixo real     a = 4
+• Semi-eixo imaginário  b = 3
+• Centro na origem, eixo principal no eixo x
 
-      /* satellites */
-      const t1 = Date.now() / 1200;
-      const s1x = cx + r1 * Math.cos(t1), s1y = cy + r1 * Math.sin(t1);
-      ctx.fillStyle = "#22d3ee";
-      ctx.beginPath(); ctx.arc(s1x, s1y, 4, 0, Math.PI*2); ctx.fill();
+Complete a equação da hipérbole. Note que na hipérbole o segundo termo é subtraído.
+O gráfico se atualiza conforme você preenche.`,
+    label:"hipérbole — monte a equação",
+    conica:"Hipérbole",type:"equation",
+    template:"x² / [A]  −  y² / [B]  =  1",
+    fields:[
+      {id:"A",label:"denominador em x² (a²)",target:16,placeholder:"a²"},
+      {id:"B",label:"denominador em y² (b²)",target:9, placeholder:"b²"}
+    ],
+    check:f=>Math.abs(f.A-16)<1&&Math.abs(f.B-9)<1,
+    pts:240,
+    successMsg:"Correto! a²=16 e b²=9. A hipérbole está modelada com precisão.",
+    failMsg:"Os denominadores são os quadrados: a²=4²=16 e b²=3²=9.",
+    solutionEq:"x² / 16  −  y² / 9  =  1",
+    eqDisplay:"x² / [A]  −  y² / [B]  =  1",
+    draw(ctx,W,H,fv){
+      const A=parseFloat(fv&&fv.A)||.1,B=parseFloat(fv&&fv.B)||.1;
+      const a=Math.sqrt(Math.abs(A)),b=Math.sqrt(Math.abs(B));
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.08;
+      const ra=a*sc,rb=b*sc,ta=4*sc,tb=3*sc;
+      drawStars(ctx,W,H);
+      // sun
+      ctx.fillStyle="#78350f";ctx.beginPath();ctx.arc(cx,cy,12,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fde68a";ctx.beginPath();ctx.arc(cx,cy,9,0,Math.PI*2);ctx.fill();
+      // target
+      dashed(ctx,()=>{for(const sg of[1,-1]){ctx.beginPath();for(let t=-1.6;t<=1.6;t+=.05){const x=cx+sg*ta*Math.cosh(t),y=cy+tb*Math.sinh(t);t===-1.6?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}},"#1f3060",1.5);
+      // user curve
+      if(a>.2&&b>.2){
+        solid(ctx,()=>{for(const sg of[1,-1]){ctx.beginPath();for(let t=-1.6;t<=1.6;t+=.015){const x=cx+sg*ra*Math.cosh(t),y=cy+rb*Math.sinh(t);t===-1.6?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}},"#f472b6",2);
+        const t0=(Date.now()/1500)%2.4-1.2;
+        const ox=cx-ra*Math.cosh(t0),oy=cy+rb*Math.sinh(t0);
+        ctx.fillStyle="#e2e8f0";ctx.beginPath();ctx.arc(ox,oy,4,0,Math.PI*2);ctx.fill();
+      }
+      lbl(ctx,"Sol",cx+13,cy+4,"#fbbf24");
+      lbl(ctx,"trajetória-alvo",cx-ta-78,cy-tb-8,"#1f3060");
+    }
+  },
 
-      const t2 = Date.now() / 2600;
-      const s2x = cx + r2 * Math.cos(t2 + Math.PI), s2y = cy + r2 * Math.sin(t2 + Math.PI);
-      ctx.fillStyle = "#f59e0b";
-      ctx.beginPath(); ctx.arc(s2x, s2y, 4, 0, Math.PI*2); ctx.fill();
-
-      label(ctx, "Terra",      cx + 12, cy + 4,    "#9ca3af");
-      label(ctx, "órbita baixa", cx + r1 + 4, cy + 4, "#0e7490");
-      label(ctx, "órbita alta",  cx + r2 + 4, cy + 4, "#92400e");
-      label(ctx, "alvo",         cx - ta + 6, cy - tb - 6, "#1f3a1f");
+  /* ── 9  SLIDER — elipse transferência final (mais difícil) ── */
+  {
+    title:"Manobra de Hohmann — Missão Final",
+    desc:`Para inserir uma sonda na órbita de Netuno, é necessária uma elipse de transferência de Hohmann 
+que tangencia internamente a órbita circular de partida (r=2) e externamente a órbita de chegada (r=8). 
+A elipse de transferência tem centro deslocado: seu periélio coincide com a órbita interna 
+e seu afélio com a órbita externa. Ajuste a e b com precisão.`,
+    label:"elipse — transferência de Hohmann",
+    conica:"Elipse",type:"slider",
+    eqFn:p=>`x² / ${p.a.toFixed(1)}²  +  y² / ${p.b.toFixed(1)}²  =  1`,
+    params:[
+      {id:"a",label:"Semi-eixo maior (a)",min:2,max:10,step:.1,val:3,target:5},
+      {id:"b",label:"Semi-eixo menor (b)",min:1,max:8, step:.1,val:2,target:4}
+    ],
+    check:p=>Math.abs(p.a-5)<.5&&Math.abs(p.b-4)<.5,
+    pts:250,
+    successMsg:"Manobra calculada! A sonda chegará a Netuno com consumo mínimo de combustível. Missão concluída!",
+    failMsg:"A elipse ainda não tangencia corretamente as duas órbitas. Lembre: periélio = r_min, afélio = r_max.",
+    solutionEq:"x² / 5²  +  y² / 4²  =  1  (a=5, b=4)",
+    draw(ctx,W,H,p){
+      const cx=W/2,cy=H/2,sc=Math.min(W,H)*.072;
+      const a=p.a*sc,b=p.b*sc,r1=2*sc,r2=8*sc,ta=5*sc,tb=4*sc;
+      drawStars(ctx,W,H);
+      // orbits
+      solid(ctx,()=>{ctx.beginPath();ctx.arc(cx,cy,r1,0,Math.PI*2);},"#22d3ee",1);
+      solid(ctx,()=>{ctx.beginPath();ctx.arc(cx,cy,r2,0,Math.PI*2);},"#f59e0b",1);
+      // target
+      dashed(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,ta,tb,0,0,Math.PI*2);},"#1f4060",1.5);
+      // current
+      solid(ctx,()=>{ctx.beginPath();ctx.ellipse(cx,cy,a,b,0,0,Math.PI*2);},"#4ade80",2);
+      // sun
+      ctx.fillStyle="#78350f";ctx.beginPath();ctx.arc(cx,cy,12,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fde68a";ctx.beginPath();ctx.arc(cx,cy,9,0,Math.PI*2);ctx.fill();
+      // sats
+      const t1=Date.now()/1200,s1x=cx+r1*Math.cos(t1),s1y=cy+r1*Math.sin(t1);
+      ctx.fillStyle="#22d3ee";ctx.beginPath();ctx.arc(s1x,s1y,4,0,Math.PI*2);ctx.fill();
+      const t2=Date.now()/3200,s2x=cx+r2*Math.cos(t2+Math.PI),s2y=cy+r2*Math.sin(t2+Math.PI);
+      ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(s2x,s2y,4,0,Math.PI*2);ctx.fill();
+      lbl(ctx,"Sol",cx+13,cy+4,"#fde68a");
+      lbl(ctx,"órbita interna (r=2)",cx+r1+4,cy-8,"#0e7490",10);
+      lbl(ctx,"órbita externa (r=8)",cx+r2+4,cy-8,"#92400e",10);
+      lbl(ctx,"alvo",cx-ta+4,cy-tb-8,"#1f4060");
     }
   }
 ];
 
-/* ─────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────── */
-const STARS = Array.from({length:80}, (_,i) => ({
-  x: (Math.sin(i * 137.508) * .5 + .5),
-  y: (Math.cos(i * 97.306)  * .5 + .5),
-  r: i % 7 === 0 ? .9 : i % 3 === 0 ? .6 : .3,
-  bright: i % 11 === 0
-}));
-
-function drawStars(ctx, W, H) {
-  for (const s of STARS) {
-    ctx.fillStyle = s.bright ? "#475569" : "#1f2937";
-    ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI*2); ctx.fill();
-  }
+/* ═══════════════════════════════════════════════
+   SIDEBAR BUILD
+═══════════════════════════════════════════════ */
+const TYPE_LABELS = {slider:"Slider",multiple:"Múltipla Escolha",numeric:"Numérico",equation:"Monte a Equação"};
+function buildSidebar(){
+  const sb=document.getElementById("sidebar");
+  sb.innerHTML="<h3>missões</h3>";
+  M.forEach((m,i)=>{
+    const div=document.createElement("div");
+    div.className="mi "+(i<state.current?"done":i===state.current?"active":"locked");
+    div.id="mi"+i;
+    div.innerHTML=`<div class="mi-num">${String(i+1).padStart(2,"0")}</div>
+      <div class="mi-title">${m.title.split(" ").slice(0,3).join(" ")}…</div>
+      <div class="mi-type">${m.conica} — ${TYPE_LABELS[m.type]}</div>`;
+    sb.appendChild(div);
+  });
 }
 
-function drawEarth(ctx, cx, cy, r) {
-  ctx.fillStyle = "#1a5c38";
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = "#1d6b3a";
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = "#4ade80";
-  ctx.beginPath(); ctx.arc(cx - r*.2, cy - r*.1, r * .55, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = "#2563eb";
-  ctx.beginPath(); ctx.arc(cx + r*.25, cy + r*.2, r * .4, 0, Math.PI*2); ctx.fill();
-}
-
-function drawStar6(ctx, x, y, r, color) {
-  ctx.fillStyle = color;
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI*2 - Math.PI/2;
-    const ex = x + Math.cos(a) * r, ey = y + Math.sin(a) * r;
-    ctx.beginPath(); ctx.arc(ex, ey, 1.2, 0, Math.PI*2); ctx.fill();
-  }
-  ctx.beginPath(); ctx.arc(x, y, r * .55, 0, Math.PI*2); ctx.fill();
-}
-
-function label(ctx, text, x, y, color) {
-  ctx.fillStyle = color;
-  ctx.font = "10px Inter, system-ui, sans-serif";
-  ctx.fillText(text, x, y);
-}
-
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════
    GAME STATE
-───────────────────────────────────────── */
-let current = 0, score = 0, answered = false, eqVisible = false;
-let pValues = {};
-let animId = null;
+═══════════════════════════════════════════════ */
+const state={current:0,score:0,answered:false,eqVisible:false,pValues:{},fieldValues:{},scores:[]};
+let animId=null;
+const canvas=document.getElementById("cv");
+const ctx2d=canvas.getContext("2d");
 
-const canvas = document.getElementById("cv");
-const ctx    = canvas.getContext("2d");
-
-function resizeCanvas() {
-  const wrap = document.getElementById("sim-wrap");
-  const rect  = wrap.getBoundingClientRect();
-  canvas.width  = rect.width  || 560;
-  canvas.height = rect.height || 260;
+function resizeCanvas(){
+  const r=document.getElementById("sim-wrap").getBoundingClientRect();
+  canvas.width=r.width||560;canvas.height=r.height||250;
 }
 
 /* ── RENDER LOOP ── */
-function render() {
+function render(){
   resizeCanvas();
-  ctx.fillStyle = "#060b18";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  MISSIONS[current].draw(ctx, canvas.width, canvas.height, getP());
-  animId = requestAnimationFrame(render);
+  ctx2d.fillStyle="#060b18";ctx2d.fillRect(0,0,canvas.width,canvas.height);
+  const m=M[state.current];
+  const pOrF=m.type==="slider"?getP():m.type==="equation"?state.fieldValues:{};
+  m.draw(ctx2d,canvas.width,canvas.height,pOrF);
+  animId=requestAnimationFrame(render);
 }
 
-function getP() {
-  const p = {};
-  MISSIONS[current].params.forEach(pr => { p[pr.id] = parseFloat(pValues[pr.id] ?? pr.val); });
+function getP(){
+  const p={};
+  const m=M[state.current];
+  if(m.params) m.params.forEach(pr=>{p[pr.id]=parseFloat(state.pValues[pr.id]??pr.val);});
   return p;
 }
 
 /* ── BUILD CONTROLS ── */
-function buildControls() {
-  const m = MISSIONS[current];
-  document.getElementById("mission-title").textContent = m.title;
-  document.getElementById("mission-desc").textContent  = m.desc;
-  document.getElementById("sim-label").textContent      = m.label;
+function buildControls(){
+  const m=M[state.current];
+  document.getElementById("badge").textContent=`Missão ${state.current+1} / ${M.length}`;
+  document.getElementById("progress-bar").style.width=`${(state.current/M.length)*100}%`;
+  document.getElementById("mission-title").textContent=m.title;
+  document.getElementById("mission-desc").textContent=m.desc;
+  document.getElementById("sim-label").textContent=m.label;
 
-  pValues = {};
-  const cont = document.getElementById("params");
-  cont.innerHTML = "";
+  // type badge
+  const tb=document.getElementById("type-badge");
+  const cls={slider:"type-slider",multiple:"type-multiple",numeric:"type-numeric",equation:"type-equation"};
+  tb.className="type-badge "+cls[m.type];
+  tb.textContent=TYPE_LABELS[m.type];
 
-  m.params.forEach(pr => {
-    pValues[pr.id] = pr.val;
+  // clear
+  document.getElementById("answer-area").innerHTML="";
+  document.getElementById("eq-panel").style.display="none";
+  state.eqVisible=false;
+  document.getElementById("btn-confirm").disabled=false;
+  document.getElementById("btn-confirm").textContent="Confirmar";
+  document.getElementById("feedback").style.display="none";
+  state.answered=false;
+  state.pValues={};state.fieldValues={};
 
-    const row   = document.createElement("div"); row.className = "param-row";
-    const lbl   = document.createElement("div"); lbl.className = "param-label"; lbl.textContent = pr.label;
-    const inp   = document.createElement("input");
-    inp.type  = "range";
-    inp.min   = pr.min; inp.max = pr.max; inp.step = pr.step; inp.value = pr.val;
-    const valEl = document.createElement("div"); valEl.className = "param-val";
-    valEl.textContent = pr.val.toFixed(1);
+  const beq=document.getElementById("btn-eq");
 
-    inp.addEventListener("input", () => {
-      pValues[pr.id] = parseFloat(inp.value);
-      valEl.textContent = parseFloat(inp.value).toFixed(1);
-      if (eqVisible) updateEq();
-    });
-
-    row.append(lbl, inp, valEl);
-    cont.appendChild(row);
-  });
-
-  eqVisible = false;
-  document.getElementById("eq-panel").style.display = "none";
-  document.getElementById("btn-eq").textContent = "Ver equação";
-  document.getElementById("btn-confirm").disabled = false;
-  document.getElementById("feedback").style.display = "none";
-  answered = false;
-  updateEq();
-}
-
-function updateEq() {
-  document.getElementById("eq-panel").textContent = MISSIONS[current].eqFn(getP());
-}
-
-/* ── SIDEBAR ── */
-function updateSidebar() {
-  const types = ["Elipse","Parábola","Hipérbole","Parábola","Elipse"];
-  for (let i = 0; i < 5; i++) {
-    const el  = document.getElementById("mi" + i);
-    const sub = document.getElementById("ms" + i);
-    if (i < current) {
-      el.className  = "mission-item done";
-      sub.textContent = types[i] + " — concluída ✓";
-    } else if (i === current) {
-      el.className  = "mission-item active";
-      sub.textContent = types[i] + " — em andamento...";
-    } else {
-      el.className  = "mission-item locked";
-      sub.textContent = types[i] + " — bloqueada";
-    }
+  if(m.type==="slider"){
+    beq.style.display="block";
+    beq.textContent="Ver equação";
+    buildSlider(m);
+  } else if(m.type==="multiple"){
+    beq.style.display="none";
+    buildMultiple(m);
+  } else if(m.type==="numeric"){
+    beq.style.display="none";
+    buildNumeric(m);
+  } else if(m.type==="equation"){
+    beq.style.display="none";
+    buildEquation(m);
   }
-  document.getElementById("badge").textContent = "Missão " + (current + 1) + " / 5";
 }
 
-/* ── BUTTONS ── */
-document.getElementById("btn-eq").addEventListener("click", () => {
-  eqVisible = !eqVisible;
-  document.getElementById("eq-panel").style.display = eqVisible ? "block" : "none";
-  document.getElementById("btn-eq").textContent = eqVisible ? "Ocultar equação" : "Ver equação";
+function buildSlider(m){
+  const area=document.getElementById("answer-area");
+  m.params.forEach(pr=>{
+    state.pValues[pr.id]=pr.val;
+    const row=document.createElement("div");row.className="param-row";
+    const lbl2=document.createElement("div");lbl2.className="param-label";lbl2.textContent=pr.label;
+    const inp=document.createElement("input");inp.type="range";inp.min=pr.min;inp.max=pr.max;inp.step=pr.step;inp.value=pr.val;
+    const valEl=document.createElement("div");valEl.className="param-val";valEl.id="pv_"+pr.id;valEl.textContent=pr.val.toFixed(1);
+    inp.addEventListener("input",()=>{
+      state.pValues[pr.id]=parseFloat(inp.value);
+      valEl.textContent=parseFloat(inp.value).toFixed(1);
+      if(state.eqVisible) updateEqPanel();
+    });
+    row.append(lbl2,inp,valEl);area.appendChild(row);
+  });
+}
+
+function buildMultiple(m){
+  const area=document.getElementById("answer-area");
+  const grid=document.createElement("div");grid.id="mc-grid";
+  m.options.forEach((opt,i)=>{
+    const btn=document.createElement("div");btn.className="mc-opt";btn.textContent=opt;
+    btn.addEventListener("click",()=>{
+      if(state.answered)return;
+      document.querySelectorAll(".mc-opt").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      state.mcSelected=i;
+    });
+    grid.appendChild(btn);
+  });
+  area.appendChild(grid);
+}
+
+function buildNumeric(m){
+  const area=document.getElementById("answer-area");
+  area.innerHTML=`
+    <div id="numeric-wrap">
+      <label>Resposta:</label>
+      <input type="number" id="numeric-input" placeholder="Digite o valor" step="0.01"/>
+      <span style="font-size:12px;color:var(--text-muted)">${m.unit}</span>
+    </div>
+    <div id="numeric-hint">${m.hint}</div>`;
+  document.getElementById("numeric-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-confirm").click();});
+}
+
+function buildEquation(m){
+  const area=document.getElementById("answer-area");
+  // display with blanks
+  let displayHTML=m.eqDisplay;
+  m.fields.forEach(f=>{
+    displayHTML=displayHTML.replace(`[${f.id}]`,`<span class="eq-blank" id="blank_${f.id}">___</span>`);
+  });
+  const dispDiv=document.createElement("div");dispDiv.className="eq-display";dispDiv.innerHTML=displayHTML;
+  area.appendChild(dispDiv);
+
+  const inputsDiv=document.createElement("div");inputsDiv.className="eq-inputs";
+  m.fields.forEach(f=>{
+    state.fieldValues[f.id]="";
+    const wrap=document.createElement("div");wrap.className="eq-field-wrap";
+    const lbl2=document.createElement("div");lbl2.className="eq-field-label";lbl2.textContent=f.label;
+    const inp=document.createElement("input");inp.type="number";inp.className="eq-field";inp.id="ef_"+f.id;
+    inp.placeholder=f.placeholder;inp.step="0.1";
+    inp.addEventListener("input",()=>{
+      state.fieldValues[f.id]=parseFloat(inp.value)||0;
+      const blank=document.getElementById("blank_"+f.id);
+      if(blank) blank.textContent=inp.value||"___";
+    });
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-confirm").click();});
+    wrap.append(lbl2,inp);inputsDiv.appendChild(wrap);
+  });
+  area.appendChild(inputsDiv);
+}
+
+function updateEqPanel(){
+  const m=M[state.current];
+  if(m.eqFn) document.getElementById("eq-panel").textContent=m.eqFn(getP());
+}
+
+/* ── CONFIRM LOGIC ── */
+function doConfirm(){
+  if(state.answered)return;
+  state.answered=true;
+  const m=M[state.current];
+  let ok=false;
+
+  if(m.type==="slider"){
+    ok=m.check(getP());
+  } else if(m.type==="multiple"){
+    const sel=state.mcSelected;
+    if(sel===undefined){state.answered=false;return;}
+    ok=(sel===m.correctIndex);
+    // highlight options
+    document.querySelectorAll(".mc-opt").forEach((btn,i)=>{
+      if(i===m.correctIndex) btn.classList.add("correct");
+      else if(i===sel&&!ok) btn.classList.add("wrong");
+    });
+  } else if(m.type==="numeric"){
+    const val=parseFloat(document.getElementById("numeric-input").value);
+    if(isNaN(val)){state.answered=false;return;}
+    ok=Math.abs(val-m.answer)<=m.tolerance;
+    document.getElementById("numeric-input").classList.add(ok?"correct":"wrong");
+  } else if(m.type==="equation"){
+    ok=m.check(state.fieldValues);
+    m.fields.forEach(f=>{
+      const inp=document.getElementById("ef_"+f.id);
+      if(inp){
+        const v=parseFloat(inp.value)||0;
+        inp.classList.add(Math.abs(v-f.target)<1?"correct":"wrong");
+      }
+    });
+  }
+
+  const pts=ok?m.pts:Math.round(m.pts*.35);
+  state.score+=pts;
+  state.scores.push({title:m.title,pts,max:m.pts,ok});
+  document.getElementById("score").textContent=state.score;
+  document.getElementById("btn-confirm").disabled=true;
+
+  showFeedback(ok,m,pts);
+}
+
+function showFeedback(ok,m,pts){
+  const fb=document.getElementById("feedback");
+  document.getElementById("fb-icon").textContent=ok?"✓":"✗";
+  document.getElementById("fb-title").textContent=ok?`Missão concluída! +${pts} pts`:`Incorreto — +${pts} pts`;
+  document.getElementById("fb-title").style.color=ok?"#4ade80":"#f87171";
+  document.getElementById("fb-msg").textContent=ok?m.successMsg:m.failMsg;
+  const fbMath=document.getElementById("fb-math");
+  if(m.solutionEq){fbMath.textContent="Solução: "+m.solutionEq;fbMath.style.display="block";}
+  else fbMath.style.display="none";
+  document.getElementById("fb-btn").textContent=state.current<M.length-1?"Próxima missão":"Ver resultado final";
+  fb.style.display="flex";
+}
+
+/* ── EVENT LISTENERS ── */
+document.getElementById("btn-eq").addEventListener("click",()=>{
+  state.eqVisible=!state.eqVisible;
+  const ep=document.getElementById("eq-panel");
+  ep.style.display=state.eqVisible?"block":"none";
+  document.getElementById("btn-eq").textContent=state.eqVisible?"Ocultar equação":"Ver equação";
+  if(state.eqVisible) updateEqPanel();
 });
 
-document.getElementById("btn-confirm").addEventListener("click", () => {
-  if (answered) return;
-  answered = true;
+document.getElementById("btn-confirm").addEventListener("click",doConfirm);
 
-  const m  = MISSIONS[current];
-  const ok = m.check(getP());
-  const pts = ok ? 200 : 80;
-  score += pts;
-
-  document.getElementById("score").textContent = score;
-
-  const fb = document.getElementById("feedback");
-  document.getElementById("fb-icon").textContent  = ok ? "✓" : "⚠";
-  document.getElementById("fb-title").textContent = ok ? `Missão concluída! +${pts} pts` : `Quase lá! +${pts} pts`;
-  document.getElementById("fb-title").style.color = ok ? "#4ade80" : "#fbbf24";
-  document.getElementById("fb-msg").textContent   = ok ? m.successMsg : m.failMsg;
-  document.getElementById("fb-btn").textContent   = current < 4 ? "Próxima missão" : "Ver resultado";
-  fb.style.display = "flex";
-  document.getElementById("btn-confirm").disabled = true;
-});
-
-document.getElementById("fb-btn").addEventListener("click", () => {
-  if (current < 4) {
-    current++;
-    updateSidebar();
+document.getElementById("fb-btn").addEventListener("click",()=>{
+  document.getElementById("feedback").style.display="none";
+  document.getElementById("fb-title").style.color="";
+  if(state.current<M.length-1){
+    state.current++;
+    buildSidebar();
     buildControls();
   } else {
-    cancelAnimationFrame(animId);
-    document.getElementById("main").style.display    = "none";
-    document.getElementById("topbar").style.display  = "none";
-    document.getElementById("win-screen").style.display = "flex";
-    document.getElementById("final-pts").textContent = score;
+    showWin();
   }
 });
 
-document.getElementById("btn-restart").addEventListener("click", () => {
-  current = 0; score = 0; answered = false; eqVisible = false;
-  document.getElementById("score").textContent = 0;
-  document.getElementById("win-screen").style.display = "none";
-  document.getElementById("main").style.display   = "flex";
-  document.getElementById("topbar").style.display = "flex";
-  updateSidebar();
-  buildControls();
-  cancelAnimationFrame(animId);
-  render();
+document.getElementById("btn-restart").addEventListener("click",()=>{
+  state.current=0;state.score=0;state.answered=false;state.eqVisible=false;state.scores=[];
+  state.mcSelected=undefined;
+  document.getElementById("score").textContent=0;
+  document.getElementById("win-screen").style.display="none";
+  document.getElementById("main").style.display="flex";
+  document.getElementById("topbar").style.display="flex";
+  document.getElementById("progress-wrap").style.display="block";
+  buildSidebar();buildControls();
+  cancelAnimationFrame(animId);render();
 });
+
+/* ── WIN ── */
+function showWin(){
+  cancelAnimationFrame(animId);
+  document.getElementById("main").style.display="none";
+  document.getElementById("topbar").style.display="none";
+  document.getElementById("progress-wrap").style.display="none";
+  document.getElementById("win-screen").style.display="flex";
+  document.getElementById("final-pts").textContent=state.score;
+  const maxTotal=M.reduce((s,m)=>s+m.pts,0);
+  const pct=state.score/maxTotal;
+  document.getElementById("win-stars").textContent=pct>=.8?"★★★":pct>=.5?"★★☆":"★☆☆";
+  const tbl=document.getElementById("win-table");
+  tbl.innerHTML="<tr><td><b style='color:var(--text-main)'>Missão</b></td><td><b style='color:var(--text-main)'>Pontos</b></td></tr>";
+  state.scores.forEach(s=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${s.ok?"✓":"✗"} ${s.title}</td><td>${s.pts} / ${s.max}</td>`;
+    tbl.appendChild(tr);
+  });
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td style="color:var(--text-main);font-weight:600">Total</td><td style="color:var(--amber);font-weight:700">${state.score} / ${maxTotal}</td>`;
+  tbl.appendChild(tr);
+}
 
 /* ── INIT ── */
-window.addEventListener("load", () => {
-  resizeCanvas();
-  updateSidebar();
-  buildControls();
-  render();
+window.addEventListener("load",()=>{
+  resizeCanvas();buildSidebar();buildControls();render();
 });
-
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize",resizeCanvas);
 </script>
 </body>
 </html>
