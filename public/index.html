@@ -343,6 +343,8 @@ body{
 }
 #btn-restart:hover{background:var(--blue-hover);}
 
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+#inline-error{display:none;font-size:11px;color:var(--red);margin-top:6px;padding:5px 10px;background:var(--red-bg);border-radius:6px;border:1px solid #991b1b;}
 @media(max-width:660px){
   .menu-body{flex-direction:column;}
   .menu-form{flex:unset;}
@@ -452,6 +454,7 @@ body{
         <div id="mission-title">—</div>
         <div id="mission-desc">—</div>
         <div id="answer-area"></div>
+        <div id="inline-error"></div>
         <div id="eq-panel"></div>
         <div id="btn-row">
           <button id="btn-eq" style="display:none">Ver equação</button>
@@ -627,6 +630,7 @@ function buildControls(){
   const cls={slider:"type-slider",multiple:"type-multiple",numeric:"type-numeric",equation:"type-equation"};
   tb.className="type-badge "+cls[m.type];tb.textContent=TYPE_LABELS[m.type];
   document.getElementById("answer-area").innerHTML="";
+  document.getElementById("inline-error").style.display="none";
   document.getElementById("eq-panel").style.display="none";
   state.eqVisible=false;state.answered=false;state.pValues={};state.fieldValues={};state.mcSelected=undefined;
   document.getElementById("btn-confirm").disabled=false;
@@ -648,7 +652,7 @@ function buildSlider(m){
     const l=document.createElement("div");l.className="param-label";l.textContent=pr.label;
     const inp=document.createElement("input");inp.type="range";inp.min=pr.min;inp.max=pr.max;inp.step=pr.step;inp.value=pr.val;
     const v=document.createElement("div");v.className="param-val";v.textContent=pr.val.toFixed(1);
-    inp.addEventListener("input",()=>{state.pValues[pr.id]=parseFloat(inp.value);v.textContent=parseFloat(inp.value).toFixed(1);if(state.eqVisible)updateEqPanel();});
+    inp.addEventListener("input",()=>{state.pValues[pr.id]=parseFloat(inp.value);v.textContent=parseFloat(inp.value).toFixed(1);if(state.eqVisible)updateEqPanel();hideInlineError();});
     row.append(l,inp,v);area.appendChild(row);
   });
 }
@@ -657,7 +661,7 @@ function buildMultiple(m){
   const grid=document.createElement("div");grid.id="mc-grid";
   m.options.forEach((opt,i)=>{
     const btn=document.createElement("div");btn.className="mc-opt";btn.textContent=opt;
-    btn.addEventListener("click",()=>{if(state.answered)return;document.querySelectorAll(".mc-opt").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");state.mcSelected=i;});
+    btn.addEventListener("click",()=>{if(state.answered)return;document.querySelectorAll(".mc-opt").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");state.mcSelected=i;hideInlineError();});
     grid.appendChild(btn);
   });
   area.appendChild(grid);
@@ -665,7 +669,7 @@ function buildMultiple(m){
 function buildNumeric(m){
   const area=document.getElementById("answer-area");
   area.innerHTML=`<div id="numeric-wrap"><label>Resposta:</label><input type="number" id="numeric-input" placeholder="Digite o valor" step="0.01"/><span style="font-size:12px;color:var(--text-muted)">${m.unit}</span></div>`;
-  document.getElementById("numeric-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-confirm").click();});
+  document.getElementById("numeric-input").addEventListener("keydown",e=>{hideInlineError();if(e.key==="Enter")document.getElementById("btn-confirm").click();});
 }
 function buildEquation(m){
   const area=document.getElementById("answer-area");
@@ -678,7 +682,7 @@ function buildEquation(m){
     const w=document.createElement("div");w.className="eq-field-wrap";
     const l=document.createElement("div");l.className="eq-field-label";l.textContent=f.label;
     const inp=document.createElement("input");inp.type="number";inp.className="eq-field";inp.id="ef_"+f.id;inp.placeholder=f.placeholder;inp.step=".1";
-    inp.addEventListener("input",()=>{state.fieldValues[f.id]=parseFloat(inp.value)||0;const bl=document.getElementById("blank_"+f.id);if(bl)bl.textContent=inp.value||"___";});
+    inp.addEventListener("input",()=>{state.fieldValues[f.id]=parseFloat(inp.value)||0;const bl=document.getElementById("blank_"+f.id);if(bl)bl.textContent=inp.value||"___";hideInlineError();});
     inp.addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-confirm").click();});
     w.append(l,inp);id2.appendChild(w);
   });
@@ -687,18 +691,50 @@ function buildEquation(m){
 function updateEqPanel(){const m=M[state.current];if(m.eqFn)document.getElementById("eq-panel").textContent=m.eqFn(getP());}
 
 /* ── CONFIRM ── */
+function showInlineError(msg){
+  const el=document.getElementById("inline-error");
+  el.textContent=msg;el.style.display="block";
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3000);
+}
+function hideInlineError(){document.getElementById("inline-error").style.display="none";}
+
+function shake(el){el.style.animation="none";el.offsetHeight;el.style.animation="shake .35s ease";}
+
 function doConfirm(){
   if(state.answered)return;
-  state.answered=true;
   const m=M[state.current];let ok=false;
+
+  // ── validate before accepting ──
+  if(m.type==="multiple"){
+    if(state.mcSelected===undefined){
+      document.querySelectorAll(".mc-opt").forEach(b=>shake(b));
+      showInlineError("Selecione uma das opções antes de confirmar.");
+      return;
+    }
+  }
+  else if(m.type==="numeric"){
+    const inp=document.getElementById("numeric-input");
+    if(inp.value.trim()===""){shake(inp);showInlineError("Digite um valor antes de confirmar.");return;}
+    if(isNaN(parseFloat(inp.value))){shake(inp);showInlineError("Digite um número válido.");return;}
+  }
+  else if(m.type==="equation"){
+    const empty=m.fields.filter(f=>document.getElementById("ef_"+f.id)?.value.trim()==="");
+    if(empty.length>0){
+      empty.forEach(f=>{const el=document.getElementById("ef_"+f.id);if(el)shake(el);});
+      showInlineError(`Preencha ${empty.length>1?"todos os campos":"o campo em branco"} antes de confirmar.`);
+      return;
+    }
+  }
+
+  state.answered=true;
   if(m.type==="slider"){ok=m.check(getP());}
   else if(m.type==="multiple"){
-    const sel=state.mcSelected;if(sel===undefined){state.answered=false;return;}
+    const sel=state.mcSelected;
     ok=(sel===m.correctIndex);
     document.querySelectorAll(".mc-opt").forEach((btn,i)=>{if(i===m.correctIndex)btn.classList.add("correct");else if(i===sel&&!ok)btn.classList.add("wrong");});
   }
   else if(m.type==="numeric"){
-    const val=parseFloat(document.getElementById("numeric-input").value);if(isNaN(val)){state.answered=false;return;}
+    const val=parseFloat(document.getElementById("numeric-input").value);
     ok=Math.abs(val-m.answer)<=m.tolerance;
     document.getElementById("numeric-input").classList.add(ok?"correct":"wrong");
   }
