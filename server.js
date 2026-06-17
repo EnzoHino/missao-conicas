@@ -88,7 +88,7 @@ app.get('/api/ranking', (req, res) => {
       rows = Object.values(best);
     }
 
-    rows.sort((a, b) => b.pontos_final - a.pontos_final);
+    rows.sort((a, b) => b.pontos_final - a.pontos_final || a.tempo_segundos - b.tempo_segundos);
     rows = rows.slice(0, 20);
 
     res.json(rows);

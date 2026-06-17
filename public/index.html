@@ -625,11 +625,6 @@ function stopTimer(){
   clearInterval(timerInterval);
   return Math.floor((Date.now()-state.startTime)/1000);
 }
-function calcPontuacaoFinal(pontos,tempoSeg){
-  const T_REF=900;
-  const fator=Math.max(0.5, 1-(tempoSeg/T_REF)*0.5);
-  return Math.round(pontos*fator);
-}
 
 function resizeCanvas(){const r=document.getElementById("sim-wrap").getBoundingClientRect();canvas.width=r.width||560;canvas.height=r.height||250;}
 
@@ -816,17 +811,15 @@ async function showWin(){
   const ws=document.getElementById("screen-win");ws.style.display="block";
 
   const maxTotal=M.reduce((s,m)=>s+m.pts,0);
-  const pontosFinal=calcPontuacaoFinal(state.score,tempoSeg);
-  const pct=pontosFinal/maxTotal;
+  const pct=state.score/maxTotal;
   const estrelas=pct>=.8?"★★★":pct>=.5?"★★☆":"★☆☆";
-  const fator=Math.max(0.5,1-(tempoSeg/900)*0.5);
   const mm=String(Math.floor(tempoSeg/60)).padStart(2,"0");
   const ss=String(tempoSeg%60).padStart(2,"0");
 
   document.getElementById("win-nome").textContent=state.playerName;
-  document.getElementById("final-pts").textContent=pontosFinal;
-  document.getElementById("win-maxpts").textContent=`de ${maxTotal} pts brutos (fator tempo: ${fator.toFixed(2)})`;
-  document.getElementById("win-tempo-info").textContent=`⏱ Tempo: ${mm}:${ss}  •  Pontos brutos: ${state.score}  →  Pontos finais: ${pontosFinal}`;
+  document.getElementById("final-pts").textContent=state.score;
+  document.getElementById("win-maxpts").textContent=`de ${maxTotal} pontos`;
+  document.getElementById("win-tempo-info").textContent=`⏱ Tempo total: ${mm}:${ss}  (usado como desempate no ranking)`;
   document.getElementById("win-stars").textContent=estrelas;
 
   const aviso=document.getElementById("win-teste-aviso");
@@ -837,7 +830,7 @@ async function showWin(){
     status.textContent="Partida de teste — resultado não salvo no ranking.";
   }else{
     status.textContent="Salvando pontuação...";
-    const ok=await saveScore(state.playerName,state.playerRa,state.score,pontosFinal,tempoSeg,estrelas,false);
+    const ok=await saveScore(state.playerName,state.playerRa,state.score,state.score,tempoSeg,estrelas,false);
     status.textContent=ok?"✓ Pontuação salva no ranking!":"⚠ Não foi possível salvar. Verifique a conexão.";
     status.style.color=ok?"#4ade80":"#f87171";
   }
@@ -845,8 +838,7 @@ async function showWin(){
   const tbl=document.getElementById("win-table");
   tbl.innerHTML=`<tr><td><b style="color:var(--text-main)">Missão</b></td><td><b style="color:var(--text-main)">Pontos</b></td></tr>`
     +state.scores.map(s=>`<tr><td>${s.ok?"✓":"✗"} ${s.title}</td><td>${s.pts} / ${s.max}</td></tr>`).join("")
-    +`<tr><td style="color:var(--text-main);font-weight:600">Bruto</td><td style="color:#94a3b8;font-weight:600">${state.score} / ${maxTotal}</td></tr>`
-    +`<tr><td style="color:var(--text-main);font-weight:600">Final (c/ tempo)</td><td style="color:var(--amber);font-weight:700">${pontosFinal}</td></tr>`;
+    +`<tr><td style="color:var(--text-main);font-weight:600">Total</td><td style="color:var(--amber);font-weight:700">${state.score} / ${maxTotal}</td></tr>`;
 }
 
 /* ══════════════════════════════════════════════
