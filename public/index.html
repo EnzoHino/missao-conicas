@@ -105,6 +105,10 @@ body{
   margin-bottom:12px;
 }
 .ranking-title{font-size:13px;font-weight:600;color:var(--text-main);}
+.ranking-toggle{display:flex;gap:2px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.rtog{padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all .15s;}
+.rtog.active{background:var(--blue-dark);color:#fff;}
+.timer-display{font-size:13px;color:#94a3b8;font-variant-numeric:tabular-nums;}
 
 .ranking-table-wrap{
   background:var(--bg-panel);border:1px solid var(--border);
@@ -382,6 +386,12 @@ body{
       </div>
 
       <div class="form-group">
+        <label class="form-label">RA (6 dígitos)</label>
+        <input type="text" id="input-ra" class="form-input" placeholder="Ex: 123456" maxlength="6" autocomplete="off" inputmode="numeric"/>
+        <span class="form-error" id="ra-error">RA deve ter exatamente 6 dígitos numéricos.</span>
+      </div>
+
+      <div class="form-group">
         <label class="form-label">Tipo de partida</label>
         <label class="check-wrap" id="check-wrap-teste">
           <input type="checkbox" id="chk-teste"/>
@@ -399,20 +409,26 @@ body{
     <div class="menu-ranking">
       <div class="ranking-header">
         <span class="ranking-title">🏆 Ranking</span>
+        <div class="ranking-toggle">
+          <button class="rtog active" id="rtog-todas" onclick="loadRanking('todas')">Todas</button>
+          <button class="rtog" id="rtog-melhor" onclick="loadRanking('melhor')">Melhor</button>
+        </div>
       </div>
       <div class="ranking-table-wrap">
         <table class="rtable" id="ranking-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>Nome</th>
+              <th>Nome / RA</th>
+              <th>Tent.</th>
               <th style="text-align:right">Pontos</th>
+              <th>Tempo</th>
               <th>⭐</th>
               <th>Data</th>
             </tr>
           </thead>
           <tbody id="ranking-body">
-            <tr><td colspan="5" class="ranking-empty">Carregando...</td></tr>
+            <tr><td colspan="7" class="ranking-empty">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -429,6 +445,8 @@ body{
     </div>
     <div class="topbar-right">
       <span class="player-name">👤 <span id="topbar-nome">—</span></span>
+      <span class="player-name" id="topbar-ra" style="display:none">RA: <span id="topbar-ra-val">—</span></span>
+      <span class="timer-display">⏱ <span id="topbar-timer">00:00</span></span>
       <span class="teste-pill" id="teste-pill" style="display:none">TESTE</span>
       <span class="pts">Pontos: <span id="score">0</span></span>
     </div>
@@ -473,6 +491,7 @@ body{
     <div class="win-player">Parabéns, <span id="win-nome">—</span>!</div>
     <div class="win-pts" id="final-pts">0</div>
     <div class="win-maxpts" id="win-maxpts">de 1630 pontos</div>
+    <div id="win-tempo-info" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
     <div class="win-stars" id="win-stars">★★★</div>
     <div class="win-teste-aviso" id="win-teste-aviso" style="display:none">⚠ Partida de teste — não entra no ranking</div>
     <div class="win-save-status" id="win-save-status"></div>
@@ -535,39 +554,47 @@ const M=[
 /* ══════════════════════════════════════════════
    RANKING API
 ══════════════════════════════════════════════ */
-async function loadRanking(){
+let rankingFiltro='todas';
+async function loadRanking(filtro){
+  if(filtro) rankingFiltro=filtro;
+  document.getElementById("rtog-todas").classList.toggle("active",rankingFiltro==="todas");
+  document.getElementById("rtog-melhor").classList.toggle("active",rankingFiltro==="melhor");
   const tbody=document.getElementById("ranking-body");
-  tbody.innerHTML=`<tr><td colspan="5" class="ranking-empty">Carregando...</td></tr>`;
+  tbody.innerHTML=`<tr><td colspan="7" class="ranking-empty">Carregando...</td></tr>`;
   try{
-    const r=await fetch(`/api/ranking?teste=0`);
+    const r=await fetch(`/api/ranking?teste=0&filtro=${rankingFiltro}`);
     const rows=await r.json();
     if(!rows.length){
-      tbody.innerHTML=`<tr><td colspan="5" class="ranking-empty">Nenhuma partida registrada ainda.</td></tr>`;
+      tbody.innerHTML=`<tr><td colspan="7" class="ranking-empty">Nenhuma partida registrada ainda.</td></tr>`;
       return;
     }
     tbody.innerHTML=rows.map((row,i)=>{
       const posClass=i===0?"top1":i===1?"top2":i===2?"top3":"";
       const posLabel=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}º`;
       const date=new Date(row.criado_em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"});
-      const pct=Math.round((row.pontos/row.max_pts)*100);
+      const pct=Math.round((row.pontos_final/row.max_pts)*100);
+      const mm=String(Math.floor((row.tempo_segundos||0)/60)).padStart(2,"0");
+      const ss=String((row.tempo_segundos||0)%60).padStart(2,"0");
       return `<tr>
         <td class="rank-pos ${posClass}">${posLabel}</td>
-        <td class="rank-name">${escHtml(row.nome)}</td>
-        <td class="rank-pts">${row.pontos} <span style="color:var(--text-dim);font-weight:400;font-size:10px">(${pct}%)</span></td>
+        <td class="rank-name">${escHtml(row.nome)}<br><span style="font-size:10px;color:var(--text-muted)">RA ${escHtml(row.ra)}</span></td>
+        <td style="text-align:center;color:var(--text-muted);font-size:11px">#${row.tentativa}</td>
+        <td class="rank-pts">${row.pontos_final} <span style="color:var(--text-dim);font-weight:400;font-size:10px">(${pct}%)</span></td>
+        <td style="font-size:11px;color:#94a3b8;font-variant-numeric:tabular-nums">${mm}:${ss}</td>
         <td class="rank-stars">${row.estrelas}</td>
         <td class="rank-date">${date}</td>
       </tr>`;
     }).join("");
   }catch(e){
-    tbody.innerHTML=`<tr><td colspan="5" class="ranking-empty">Erro ao carregar ranking.</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="7" class="ranking-empty">Erro ao carregar ranking.</td></tr>`;
   }
 }
 
-async function saveScore(nome,pontos,estrelas,isTeste){
+async function saveScore(nome,ra,pontos,pontos_final,tempo_segundos,estrelas,isTeste){
   try{
     const r=await fetch("/api/score",{
       method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({nome,pontos,max_pts:MAX_PTS,estrelas,is_teste:isTeste})
+      body:JSON.stringify({nome,ra,pontos,pontos_final,max_pts:MAX_PTS,tempo_segundos,estrelas,is_teste:isTeste})
     });
     return r.ok;
   }catch{return false;}
@@ -579,10 +606,30 @@ function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
    GAME STATE
 ══════════════════════════════════════════════ */
 const TYPE_LABELS={slider:"Slider",multiple:"Múltipla Escolha",numeric:"Numérico",equation:"Monte a Equação"};
-let state={current:0,score:0,answered:false,eqVisible:false,pValues:{},fieldValues:{},mcSelected:undefined,scores:[],playerName:"",isTeste:false};
-let animId=null;
+let state={current:0,score:0,answered:false,eqVisible:false,pValues:{},fieldValues:{},mcSelected:undefined,scores:[],playerName:"",playerRa:"",isTeste:false,startTime:null};
+let animId=null, timerInterval=null;
 const canvas=document.getElementById("cv");
 const ctx=canvas.getContext("2d");
+
+function startTimer(){
+  state.startTime=Date.now();
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    const secs=Math.floor((Date.now()-state.startTime)/1000);
+    const mm=String(Math.floor(secs/60)).padStart(2,"0");
+    const ss=String(secs%60).padStart(2,"0");
+    document.getElementById("topbar-timer").textContent=`${mm}:${ss}`;
+  },1000);
+}
+function stopTimer(){
+  clearInterval(timerInterval);
+  return Math.floor((Date.now()-state.startTime)/1000);
+}
+function calcPontuacaoFinal(pontos,tempoSeg){
+  const T_REF=900;
+  const fator=Math.max(0.5, 1-(tempoSeg/T_REF)*0.5);
+  return Math.round(pontos*fator);
+}
 
 function resizeCanvas(){const r=document.getElementById("sim-wrap").getBoundingClientRect();canvas.width=r.width||560;canvas.height=r.height||250;}
 
@@ -763,38 +810,43 @@ function showFeedback(ok,m,pts){
 
 /* ── WIN ── */
 async function showWin(){
+  const tempoSeg=stopTimer();
   cancelAnimationFrame(animId);
   document.getElementById("screen-game").style.display="none";
   const ws=document.getElementById("screen-win");ws.style.display="block";
 
   const maxTotal=M.reduce((s,m)=>s+m.pts,0);
-  const pct=state.score/maxTotal;
+  const pontosFinal=calcPontuacaoFinal(state.score,tempoSeg);
+  const pct=pontosFinal/maxTotal;
   const estrelas=pct>=.8?"★★★":pct>=.5?"★★☆":"★☆☆";
+  const fator=Math.max(0.5,1-(tempoSeg/900)*0.5);
+  const mm=String(Math.floor(tempoSeg/60)).padStart(2,"0");
+  const ss=String(tempoSeg%60).padStart(2,"0");
 
   document.getElementById("win-nome").textContent=state.playerName;
-  document.getElementById("final-pts").textContent=state.score;
-  document.getElementById("win-maxpts").textContent=`de ${maxTotal} pontos`;
+  document.getElementById("final-pts").textContent=pontosFinal;
+  document.getElementById("win-maxpts").textContent=`de ${maxTotal} pts brutos (fator tempo: ${fator.toFixed(2)})`;
+  document.getElementById("win-tempo-info").textContent=`⏱ Tempo: ${mm}:${ss}  •  Pontos brutos: ${state.score}  →  Pontos finais: ${pontosFinal}`;
   document.getElementById("win-stars").textContent=estrelas;
 
   const aviso=document.getElementById("win-teste-aviso");
   aviso.style.display=state.isTeste?"block":"none";
 
-  // save score
   const status=document.getElementById("win-save-status");
   if(state.isTeste){
     status.textContent="Partida de teste — resultado não salvo no ranking.";
-  } else {
+  }else{
     status.textContent="Salvando pontuação...";
-    const ok=await saveScore(state.playerName,state.score,estrelas,false);
+    const ok=await saveScore(state.playerName,state.playerRa,state.score,pontosFinal,tempoSeg,estrelas,false);
     status.textContent=ok?"✓ Pontuação salva no ranking!":"⚠ Não foi possível salvar. Verifique a conexão.";
     status.style.color=ok?"#4ade80":"#f87171";
   }
 
-  // score table
   const tbl=document.getElementById("win-table");
   tbl.innerHTML=`<tr><td><b style="color:var(--text-main)">Missão</b></td><td><b style="color:var(--text-main)">Pontos</b></td></tr>`
     +state.scores.map(s=>`<tr><td>${s.ok?"✓":"✗"} ${s.title}</td><td>${s.pts} / ${s.max}</td></tr>`).join("")
-    +`<tr><td style="color:var(--text-main);font-weight:600">Total</td><td style="color:var(--amber);font-weight:700">${state.score} / ${maxTotal}</td></tr>`;
+    +`<tr><td style="color:var(--text-main);font-weight:600">Bruto</td><td style="color:#94a3b8;font-weight:600">${state.score} / ${maxTotal}</td></tr>`
+    +`<tr><td style="color:var(--text-main);font-weight:600">Final (c/ tempo)</td><td style="color:var(--amber);font-weight:700">${pontosFinal}</td></tr>`;
 }
 
 /* ══════════════════════════════════════════════
@@ -806,24 +858,36 @@ document.getElementById("chk-teste").addEventListener("change",function(){
 
 document.getElementById("btn-play").addEventListener("click",()=>{
   const nome=document.getElementById("input-nome").value.trim();
-  const errEl=document.getElementById("nome-error");
-  const inp=document.getElementById("input-nome");
-  if(!nome){errEl.style.display="block";inp.classList.add("error");inp.focus();return;}
-  errEl.style.display="none";inp.classList.remove("error");
+  const ra=document.getElementById("input-ra").value.trim();
+  const errNome=document.getElementById("nome-error");
+  const errRa=document.getElementById("ra-error");
+  const inpNome=document.getElementById("input-nome");
+  const inpRa=document.getElementById("input-ra");
+  let valid=true;
+  if(!nome){errNome.style.display="block";inpNome.classList.add("error");inpNome.focus();valid=false;}
+  else{errNome.style.display="none";inpNome.classList.remove("error");}
+  if(!/^\d{6}$/.test(ra)){errRa.style.display="block";inpRa.classList.add("error");if(valid)inpRa.focus();valid=false;}
+  else{errRa.style.display="none";inpRa.classList.remove("error");}
+  if(!valid)return;
 
   state={current:0,score:0,answered:false,eqVisible:false,pValues:{},fieldValues:{},mcSelected:undefined,scores:[],
-    playerName:nome,isTeste:document.getElementById("chk-teste").checked};
+    playerName:nome,playerRa:ra,isTeste:document.getElementById("chk-teste").checked,startTime:null};
 
   document.getElementById("topbar-nome").textContent=nome;
+  document.getElementById("topbar-ra").style.display="inline";
+  document.getElementById("topbar-ra-val").textContent=ra;
+  document.getElementById("topbar-timer").textContent="00:00";
   document.getElementById("teste-pill").style.display=state.isTeste?"inline-block":"none";
   document.getElementById("screen-menu").style.display="none";
   const sg=document.getElementById("screen-game");sg.style.display="flex";
 
   buildSidebar();buildControls();
   cancelAnimationFrame(animId);render();
+  startTimer();
 });
 
-document.getElementById("input-nome").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-play").click();});
+document.getElementById("input-nome").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("input-ra").focus();});
+document.getElementById("input-ra").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("btn-play").click();});
 
 /* ══════════════════════════════════════════════
    GAME EVENTS
